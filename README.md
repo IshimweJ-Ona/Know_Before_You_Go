@@ -24,7 +24,7 @@ emergency contacts — all on one page. No login required.
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | React.js |
+| Frontend | Vanilla |
 | Backend | Node.js + Express.js |
 | Database | PostgreSQL |
 | HTTP Requests | Axios |
