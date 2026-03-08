@@ -197,7 +197,7 @@ test: add unit test for newsletter form
 ---
 
 ## Project Board
-Trello: [Link to be added by Nitonde]
+Trello: https://trello.com/invite/b/69abf4a89c321d16bc725124/ATTI5cbbb4d94e0812ad6a7575f39f027bbcC88DAA46/know-before-you-go-project-board
 
 ---
 
