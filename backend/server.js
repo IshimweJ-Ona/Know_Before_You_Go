@@ -17,6 +17,15 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 
+// Import route handlers
+const { getCountries } = require('./routes/countries');
+const { getVisaRequirements } = require('./routes/visa');
+const { getHealthRequirements } = require('./routes/health');
+const { getDosAndDonts } = require('./routes/dosDonts');
+const { getGeneralRequirements } = require('./routes/general');
+const { getEmergencyContacts } = require('./routes/emergency');
+const { subscribeNewsletter } = require('./routes/newsletter');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -53,71 +62,29 @@ app.get('/health', (req, res) => {
 });
 
 // ============================================
-// API ROUTES (Placeholder - will be implemented in Phase 3)
+// API ROUTES (Implemented - Phase 3)
 // ============================================
 
 // Countries endpoint
-app.get('/api/countries', (req, res) => {
-  res.status(200).json({
-    status: 'endpoint-ready',
-    message: 'GET /api/countries - Fetch all countries (Phase 3)',
-    implementation: 'pending'
-  });
-});
+app.get('/api/countries', getCountries);
 
 // Visa requirements endpoint
-app.get('/api/visa/:country_code', (req, res) => {
-  res.status(200).json({
-    status: 'endpoint-ready',
-    message: `GET /api/visa/${req.params.country_code} - Fetch visa requirements (Phase 3)`,
-    implementation: 'pending'
-  });
-});
+app.get('/api/visa/:country_code', getVisaRequirements);
 
 // Health requirements endpoint
-app.get('/api/health/:country_code', (req, res) => {
-  res.status(200).json({
-    status: 'endpoint-ready',
-    message: `GET /api/health/${req.params.country_code} - Fetch health requirements (Phase 3)`,
-    implementation: 'pending'
-  });
-});
+app.get('/api/health/:country_code', getHealthRequirements);
 
 // Dos and Don'ts endpoint
-app.get('/api/dos-donts/:country_code', (req, res) => {
-  res.status(200).json({
-    status: 'endpoint-ready',
-    message: `GET /api/dos-donts/${req.params.country_code} - Fetch dos and don'ts (Phase 3)`,
-    implementation: 'pending'
-  });
-});
+app.get('/api/dos-donts/:country_code', getDosAndDonts);
 
 // General requirements endpoint
-app.get('/api/general/:country_code', (req, res) => {
-  res.status(200).json({
-    status: 'endpoint-ready',
-    message: `GET /api/general/${req.params.country_code} - Fetch general requirements (Phase 3)`,
-    implementation: 'pending'
-  });
-});
+app.get('/api/general/:country_code', getGeneralRequirements);
 
 // Emergency contacts endpoint
-app.get('/api/emergency/:country_code', (req, res) => {
-  res.status(200).json({
-    status: 'endpoint-ready',
-    message: `GET /api/emergency/${req.params.country_code} - Fetch emergency contacts (Phase 3)`,
-    implementation: 'pending'
-  });
-});
+app.get('/api/emergency/:country_code', getEmergencyContacts);
 
 // Newsletter subscription endpoint
-app.post('/api/newsletter/subscribe', (req, res) => {
-  res.status(200).json({
-    status: 'endpoint-ready',
-    message: 'POST /api/newsletter/subscribe - Subscribe to newsletter (Phase 3)',
-    implementation: 'pending'
-  });
-});
+app.post('/api/newsletter/subscribe', subscribeNewsletter);
 
 // ============================================
 // 404 NOT FOUND
@@ -152,7 +119,7 @@ app.listen(PORT, () => {
   ║   Environment: ${process.env.NODE_ENV || 'development'}                        ║
   ║   Health Check: http://localhost:${PORT}/health             ║
   ║                                                            ║
-  ║   API Endpoints (Phase 3):                                ║
+  ║   API Endpoints (Phase 3 - IMPLEMENTED):                  ║
   ║   - GET  /api/countries                                   ║
   ║   - GET  /api/visa/:country_code                          ║
   ║   - GET  /api/health/:country_code                        ║
@@ -160,6 +127,9 @@ app.listen(PORT, () => {
   ║   - GET  /api/general/:country_code                       ║
   ║   - GET  /api/emergency/:country_code                     ║
   ║   - POST /api/newsletter/subscribe                        ║
+  ║                                                            ║
+  ║   Database: PostgreSQL (config/database.js)              ║
+  ║   Security: Helmet, CORS, Parameterized Queries           ║
   ╚════════════════════════════════════════════════════════════╝
   `);
 });
