@@ -17,6 +17,18 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 
+// Import middleware
+const { 
+  validateCountryCodeParam, 
+  validateNewsletterBody 
+} = require('./middleware/validation');
+const { 
+  asyncHandler, 
+  errorHandler, 
+  notFoundHandler,
+  requestLogger 
+} = require('./middleware/errorHandler');
+
 // Import route handlers
 const { getCountries } = require('./routes/countries');
 const { getVisaRequirements } = require('./routes/visa');
@@ -32,6 +44,9 @@ const PORT = process.env.PORT || 5000;
 // ============================================
 // MIDDLEWARE
 // ============================================
+
+// Request logging middleware
+app.use(requestLogger);
 
 // Security headers
 app.use(helmet());
@@ -62,51 +77,39 @@ app.get('/health', (req, res) => {
 });
 
 // ============================================
-// API ROUTES (Implemented - Phase 3)
+// API ROUTES (Implemented with Validation - Phase 4)
 // ============================================
 
 // Countries endpoint
-app.get('/api/countries', getCountries);
+app.get('/api/countries', asyncHandler(getCountries));
 
-// Visa requirements endpoint
-app.get('/api/visa/:country_code', getVisaRequirements);
+// Visa requirements endpoint (with country code validation)
+app.get('/api/visa/:country_code', validateCountryCodeParam, asyncHandler(getVisaRequirements));
 
-// Health requirements endpoint
-app.get('/api/health/:country_code', getHealthRequirements);
+// Health requirements endpoint (with country code validation)
+app.get('/api/health/:country_code', validateCountryCodeParam, asyncHandler(getHealthRequirements));
 
-// Dos and Don'ts endpoint
-app.get('/api/dos-donts/:country_code', getDosAndDonts);
+// Dos and Don'ts endpoint (with country code validation)
+app.get('/api/dos-donts/:country_code', validateCountryCodeParam, asyncHandler(getDosAndDonts));
 
-// General requirements endpoint
-app.get('/api/general/:country_code', getGeneralRequirements);
+// General requirements endpoint (with country code validation)
+app.get('/api/general/:country_code', validateCountryCodeParam, asyncHandler(getGeneralRequirements));
 
-// Emergency contacts endpoint
-app.get('/api/emergency/:country_code', getEmergencyContacts);
+// Emergency contacts endpoint (with country code validation)
+app.get('/api/emergency/:country_code', validateCountryCodeParam, asyncHandler(getEmergencyContacts));
 
-// Newsletter subscription endpoint
-app.post('/api/newsletter/subscribe', subscribeNewsletter);
-
-// ============================================
-// 404 NOT FOUND
-// ============================================
-app.use((req, res) => {
-  res.status(404).json({
-    error: 'Not Found',
-    message: `The route ${req.method} ${req.path} does not exist`,
-    timestamp: new Date().toISOString()
-  });
-});
+// Newsletter subscription endpoint (with body validation)
+app.post('/api/newsletter/subscribe', validateNewsletterBody, asyncHandler(subscribeNewsletter));
 
 // ============================================
-// ERROR HANDLING
+// 404 NOT FOUND & ERROR HANDLING (Phase 4)
 // ============================================
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal Server Error',
-    timestamp: new Date().toISOString()
-  });
-});
+
+// 404 handler (must be after all routes)
+app.use(notFoundHandler);
+
+// Global error handler (must be last)
+app.use(errorHandler);
 
 // ============================================
 // SERVER STARTUP
@@ -119,17 +122,23 @@ app.listen(PORT, () => {
   ║   Environment: ${process.env.NODE_ENV || 'development'}                        ║
   ║   Health Check: http://localhost:${PORT}/health             ║
   ║                                                            ║
-  ║   API Endpoints (Phase 3 - IMPLEMENTED):                  ║
+  ║   API Endpoints (Phase 4 - SECURED):                      ║
   ║   - GET  /api/countries                                   ║
-  ║   - GET  /api/visa/:country_code                          ║
-  ║   - GET  /api/health/:country_code                        ║
-  ║   - GET  /api/dos-donts/:country_code                     ║
-  ║   - GET  /api/general/:country_code                       ║
-  ║   - GET  /api/emergency/:country_code                     ║
-  ║   - POST /api/newsletter/subscribe                        ║
+  ║   - GET  /api/visa/:country_code (validated)              ║
+  ║   - GET  /api/health/:country_code (validated)            ║
+  ║   - GET  /api/dos-donts/:country_code (validated)         ║
+  ║   - GET  /api/general/:country_code (validated)           ║
+  ║   - GET  /api/emergency/:country_code (validated)         ║
+  ║   - POST /api/newsletter/subscribe (validated)            ║
   ║                                                            ║
-  ║   Database: PostgreSQL (config/database.js)              ║
-  ║   Security: Helmet, CORS, Parameterized Queries           ║
+  ║   Security Features:                                      ║
+  ║   ✓ Parameterized SQL queries                             ║
+  ║   ✓ Input validation & sanitization                       ║
+  ║   ✓ Helmet.js security headers                            ║
+  ║   ✓ CORS protection                                       ║
+  ║   ✓ Global error handler                                  ║
+  ║   ✓ Environment-aware error messages                      ║
+  ║   ✓ Request logging                                       ║
   ╚════════════════════════════════════════════════════════════╝
   `);
 });

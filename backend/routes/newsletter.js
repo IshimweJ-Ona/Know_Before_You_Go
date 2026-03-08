@@ -11,7 +11,7 @@ const { query } = require('../config/database');
  * POST /api/newsletter/subscribe
  * Subscribe a user to the newsletter
  * 
- * Request Body:
+ * Expects: req.validatedBody (set by validateNewsletterBody middleware)
  * {
  *   "name": "John Doe",
  *   "email": "john@example.com"
@@ -31,66 +31,18 @@ const { query } = require('../config/database');
  *   error: "Email already subscribed",
  *   message: "This email is already in our newsletter list"
  * }
- * 
- * Response (Validation Error 400):
- * {
- *   success: false,
- *   error: "Validation failed",
- *   message: "Email is required and must be valid",
- *   fields: ["email"]
- * }
  */
 const subscribeNewsletter = async (req, res) => {
   try {
-    const { name, email } = req.body;
-
-    // ============================================
-    // VALIDATION (Phase 4 will enhance this)
-    // ============================================
-    
-    // Check name
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Validation failed',
-        message: 'Name is required and must be a non-empty string',
-        fields: ['name'],
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    // Check email
-    if (!email || typeof email !== 'string') {
-      return res.status(400).json({
-        success: false,
-        error: 'Validation failed',
-        message: 'Email is required and must be a string',
-        fields: ['email'],
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    // Basic email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      return res.status(400).json({
-        success: false,
-        error: 'Validation failed',
-        message: 'Email must be in valid format (e.g., user@example.com)',
-        fields: ['email'],
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    const trimmedEmail = email.trim().toLowerCase();
-    const trimmedName = name.trim();
+    // Use pre-validated and sanitized data from middleware
+    const { name, email } = req.validatedBody;
 
     // ============================================
     // CHECK FOR DUPLICATE EMAIL
     // ============================================
     const existingResult = await query(
       'SELECT id, is_active FROM subscribers WHERE email = $1',
-      [trimmedEmail]
+      [email]  // Already lowercase and normalized by validation middleware
     );
 
     if (existingResult.rows.length > 0) {
@@ -101,7 +53,7 @@ const subscribeNewsletter = async (req, res) => {
           success: false,
           error: 'Email already subscribed',
           message: 'This email is already in our newsletter list',
-          email: trimmedEmail,
+          email: email,
           timestamp: new Date().toISOString()
         });
       } else {
@@ -131,7 +83,7 @@ const subscribeNewsletter = async (req, res) => {
       `INSERT INTO subscribers (name, email, is_active, subscribed_at)
        VALUES ($1, $2, true, CURRENT_TIMESTAMP)
        RETURNING id, name, email, subscribed_at`,
-      [trimmedName, trimmedEmail]
+      [name, email]  // Both already sanitized by validation middleware
     );
 
     const newSubscriber = insertResult.rows[0];
