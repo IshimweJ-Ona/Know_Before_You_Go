@@ -308,6 +308,6 @@ LOG_LEVEL=debug npm run dev
 
 ---
 
-**Ready to test?** Open Postman and request `http://localhost:5000/api/countries` 🚀
+**Ready to test?** Open Postman and request `http://localhost:5000/api/countries` 
 
 For full API documentation, see [API_DOCUMENTATION.md](API_DOCUMENTATION.md)

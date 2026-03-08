@@ -116,7 +116,6 @@ app.use(errorHandler);
 // ============================================
 app.listen(PORT, () => {
   console.log(`
-  ╔════════════════════════════════════════════════════════════╗
   ║   Know Before You Go Backend API                          ║
   ║   Server running on http://localhost:${PORT}                  ║
   ║   Environment: ${process.env.NODE_ENV || 'development'}                        ║
@@ -139,7 +138,6 @@ app.listen(PORT, () => {
   ║   ✓ Global error handler                                  ║
   ║   ✓ Environment-aware error messages                      ║
   ║   ✓ Request logging                                       ║
-  ╚════════════════════════════════════════════════════════════╝
   `);
 });
 

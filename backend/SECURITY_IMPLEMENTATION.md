@@ -19,7 +19,7 @@ GET /api/visa/'; DROP TABLE countries; --
 
 **Mitigation Implemented**:
 
-✅ **Parameterized Queries (PRIMARY DEFENSE)**
+ **Parameterized Queries (PRIMARY DEFENSE)**
 ```javascript
 // UNSAFE - Never do this
 const query1 = `SELECT * FROM countries WHERE country_code = '${code}'`;
@@ -33,12 +33,12 @@ const query2 = await query(
 
 The `pg` library automatically escapes values in the `$1, $2` placeholders.
 
-✅ **Input Validation**
+**Input Validation**
 - Country codes: Validated to be exactly 3 uppercase letters
 - Emails: Validated with regex before use
 - All inputs trimmed and normalized
 
-✅ **Defense in Depth**
+ **Defense in Depth**
 - `sanitizeString()` removes null bytes
 - `escapeSQLPattern()` escapes quotes (bonus layer)
 
@@ -60,17 +60,17 @@ The `pg` library automatically escapes values in the `$1, $2` placeholders.
 
 **Mitigation Implemented**:
 
-✅ **Input Sanitization**
+ **Input Sanitization**
 ```javascript
 const sanitized = validator.escape(trimmed);
 // Converts: <img src=x /> → &lt;img src=x /&gt;
 ```
 
-✅ **validator.js Library**
+ **validator.js Library**
 - `validator.escape()` converts dangerous HTML to entities
 - `validator.normalizeEmail()` removes XSS vectors from emails
 
-✅ **Content-Type Validation**
+ **Content-Type Validation**
 - Middleware checks `Content-Type: application/json`
 - Size limits (10KB) prevent large XSS payloads
 
@@ -91,7 +91,7 @@ const sanitized = validator.escape(trimmed);
 
 ### 4. Authentication & Authorization
 
-**Current Status**: ✅ Not needed for this project
+**Current Status**:  Not needed for this project
 
 - Platform is **public** — no user accounts
 - No authentication required
@@ -111,7 +111,7 @@ const sanitized = validator.escape(trimmed);
 - Scrape data
 - Brute force (less relevant without auth)
 
-**Current Status**: ⚠️ Not implemented (Phase 5)
+**Current Status**:  Not implemented (Phase 5)
 
 **Next Steps** (recommended for production):
 ```javascript
@@ -134,7 +134,7 @@ app.use('/api/', limiter);
 
 **Mitigation Implemented**:
 
-✅ **CORS Middleware Configuration**
+ **CORS Middleware Configuration**
 ```javascript
 const corsOptions = {
   origin: process.env.FRONTEND_URL || '*',
@@ -158,7 +158,7 @@ app.use(cors(corsOptions));
 
 **Mitigation Implemented**:
 
-✅ **Helmet.js**
+ **Helmet.js**
 ```javascript
 app.use(helmet());
 ```
@@ -179,7 +179,7 @@ Sets security headers:
 
 **Mitigation Implemented**:
 
-✅ **Body Parser Limits**
+ **Body Parser Limits**
 ```javascript
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ limit: '10kb' }));
@@ -197,7 +197,7 @@ Limits requests to 10KB. Newsletter signup (largest endpoint) is ~100 bytes.
 
 **Mitigation Implemented**:
 
-✅ **Environment-Aware Error Messages**
+ **Environment-Aware Error Messages**
 ```javascript
 if (process.env.NODE_ENV === 'production') {
   response.error = 'Internal Server Error';  // Generic message
@@ -206,12 +206,12 @@ if (process.env.NODE_ENV === 'production') {
 }
 ```
 
-✅ **No Stack Traces in Production**
+ **No Stack Traces in Production**
 ```javascript
 stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
 ```
 
-✅ **Sanitized Database Error Messages**
+ **Sanitized Database Error Messages**
 - PostgreSQL error codes mapped to generic messages
 - Never expose table/column names
 - Never expose query structure
@@ -226,12 +226,12 @@ stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
 
 **Mitigation Implemented**:
 
-✅ **Environment-Based Credentials**
+ **Environment-Based Credentials**
 - Database password stored in `.env`
 - `.env` NOT committed to Git (in `.gitignore`)
 - Template provided in `.env.example`
 
-✅ **Connection Pooling**
+ **Connection Pooling**
 ```javascript
 const pool = new Pool({
   max: 20,  // Production limit
@@ -240,7 +240,7 @@ const pool = new Pool({
 });
 ```
 
-✅ **Connection Error Handling**
+ **Connection Error Handling**
 ```javascript
 pool.on('error', (err) => {
   console.error('Connection error', err);
@@ -258,7 +258,7 @@ pool.on('error', (err) => {
 
 **Mitigation Implemented**:
 
-✅ **Email Format Validation**
+ **Email Format Validation**
 ```javascript
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 if (!emailRegex.test(email.trim())) {
@@ -266,14 +266,14 @@ if (!emailRegex.test(email.trim())) {
 }
 ```
 
-✅ **Uses validator.js**
+ **Uses validator.js**
 ```javascript
 if (!validator.isEmail(trimmed)) {
   return { valid: false };
 }
 ```
 
-✅ **Duplicate Prevention**
+**Duplicate Prevention**
 ```javascript
 const existingResult = await query(
   'SELECT id FROM subscribers WHERE email = $1',
@@ -291,12 +291,12 @@ const existingResult = await query(
 
 **Mitigation Implemented**:
 
-✅ **Helmet removes server signatures**
+ **Helmet removes server signatures**
 ```javascript
 app.use(helmet());  // Hides X-Powered-By header
 ```
 
-✅ **Custom Headers**
+ **Custom Headers**
 ```javascript
 app.use((req, res, next) => {
   res.removeHeader('X-Powered-By');
@@ -308,22 +308,22 @@ app.use((req, res, next) => {
 
 ## Checklist: Security Best Practices
 
-### ✅ Implemented (Phase 2-4)
-- [x] Parameterized SQL queries (prevents SQL injection)
-- [x] Input validation & sanitization (prevents XSS)
-- [x] CORS configuration
-- [x] Helmet.js security headers
-- [x] Request size limits
-- [x] Environment-aware error messages
-- [x] Connection pooling
-- [x] Email validation
-- [x] Duplicate prevention
-- [x] Async error handling
-- [x] `.env` protection (gitignore)
-- [x] No hardcoded secrets
-- [x] Security logs
+###  Implemented (Phase 2-4)
+- [ ] Parameterized SQL queries (prevents SQL injection)
+- [ ] Input validation & sanitization (prevents XSS)
+- [ ] CORS configuration
+- [ ] Helmet.js security headers
+- [ ] Request size limits
+- [ ] Environment-aware error messages
+- [ ] Connection pooling
+- [ ] Email validation
+- [ ] Duplicate prevention
+- [ ] Async error handling
+- [ ] `.env` protection (gitignore)
+- [ ] No hardcoded secrets
+- [ ] Security logs
 
-### 🔄 Recommended (Phase 5 / Production)
+###  Recommended (Phase 5 / Production)
 - [ ] Rate limiting (express-rate-limit)
 - [ ] HTTPS enforcement (SSL/TLS)
 - [ ] HSTS header (HTTP Strict Transport Security)

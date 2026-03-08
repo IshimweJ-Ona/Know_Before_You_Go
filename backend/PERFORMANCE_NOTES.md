@@ -468,11 +468,11 @@ All queries already optimized with:
 
 ```sql
 -- Instead of individual queries per country:
--- ❌ SELECT * FROM countries WHERE code = 'RWA'
+--  SELECT * FROM countries WHERE code = 'RWA'
 --    SELECT * FROM visa_requirements WHERE country_code = 'RWA'
 --    SELECT * FROM health_requirements WHERE country_code = 'RWA'
 
--- ✓ Use batch queries:
+--  Use batch queries:
 SELECT 
   c.*,
   COUNT(v.visa_id) as visa_count,
@@ -539,12 +539,12 @@ pool.on('remove', () => console.log('Pool: removed'));
 
 ## Performance Checkpoints
 
-### Before Launching (✓ Current Status)
-- [x] All queries optimized with indexes
-- [x] Connection pooling configured
-- [x] Response times <100ms per query
-- [x] Error handling in place
-- [x] Middleware overhead <3ms
+### Before Launching ( Current Status)
+- [ ] All queries optimized with indexes
+- [ ] Connection pooling configured
+- [ ] Response times <100ms per query
+- [ ] Error handling in place
+- [ ] Middleware overhead <3ms
 
 ### Before Major Feature Release
 - [ ] Load test to 500 concurrent users

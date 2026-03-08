@@ -173,11 +173,11 @@ Even with 10 countries currently, these indexes future-proof the database for sc
 ## Scalability Notes
 
 ### Current Design Supports:
-- ✅ 54 African countries (currently 10)
-- ✅ 5 travel information sections per country
-- ✅ Multiple records per section (e.g., multiple visa types per country)
-- ✅ Unlimited newsletter subscribers
-- ✅ Thousands of concurrent read operations (no user logins = no locks)
+-  54 African countries (currently 10)
+-  5 travel information sections per country
+-  Multiple records per section (e.g., multiple visa types per country)
+-  Unlimited newsletter subscribers
+-  Thousands of concurrent read operations (no user logins = no locks)
 
 ### Future Enhancements:
 1. Add `country_pairs` table for bilateral visa agreements (e.g., Rwanda ↔ Kenya travel agreement)
@@ -217,5 +217,5 @@ SELECT 'subscribers', COUNT(*) FROM subscribers;
 
 ---
 
-**Database Design Complete** ✓  
+**Database Design Complete** 
 Ready for SQL execution and API layer development.

@@ -132,16 +132,16 @@ All travel information tables reference the `countries` table:
 ## Security Features
 
 ### Implemented (Phase 2)
-- ✅ CORS configuration (configurable origin)
-- ✅ Helmet.js security headers
-- ✅ Connection pooling (prevents resource exhaustion)
-- ✅ Request size limits (10KB)
+-  CORS configuration (configurable origin)
+-  Helmet.js security headers
+-  Connection pooling (prevents resource exhaustion)
+-  Request size limits (10KB)
 
 ### Coming (Phase 4)
-- 🔄 Parameterized queries (SQL injection prevention)
-- 🔄 Input validation & sanitization
-- 🔄 Rate limiting
-- 🔄 Error handling & logging
+-  Parameterized queries (SQL injection prevention)
+-  Input validation & sanitization
+-  Rate limiting
+-  Error handling & logging
 
 ## Query Performance
 
