@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KBYG Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">KBYG</div>
+      <div class="login-sub">Admin Dashboard</div>
+      <div class="f-error" id="login-err"></div>
+      <div class="f-group">
+        <label class="f-label" for="login-email">Email</label>
+        <input type="email" class="f-input" id="login-email" placeholder="admin@kbyg.com" autocomplete="email">
+      </div>
+      <div class="f-group">
+        <label class="f-label" for="login-password">Password</label>
+        <input type="password" class="f-input" id="login-password" placeholder="Password" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign in</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" style="display:none;">
+
+    <aside id="sidebar">
+      <div class="sidebar-logo">KBYG</div>
+      <nav class="sidebar-nav">
+        <button class="nav-item on" onclick="showTab('overview')" id="tab-overview">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Overview
+        </button>
+        <button class="nav-item" onclick="showTab('subscribers')" id="tab-subscribers">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Subscribers
+        </button>
+        <button class="nav-item" onclick="showTab('feedback')" id="tab-feedback">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Feedback
+        </button>
+        <button class="nav-item" onclick="showTab('countries')" id="tab-countries">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Countries
+        </button>
+      </nav>
+      <button class="logout-btn" onclick="doLogout()">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </button>
+    </aside>
+
+    <main id="main">
+
+      <!-- OVERVIEW TAB -->
+      <div class="tab-panel on" id="panel-overview">
+        <div class="page-header">
+          <h1 class="page-title">Overview</h1>
+          <span class="page-date" id="today-date"></span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Subscribers</div>
+            <div class="stat-value" id="stat-subs">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Feedback Entries</div>
+            <div class="stat-value" id="stat-feedback">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Countries Active</div>
+            <div class="stat-value" id="stat-countries">10</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">New This Week</div>
+            <div class="stat-value" id="stat-new">—</div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-title">Recent Subscribers</div>
+          <div id="recent-subs-list"></div>
+        </div>
+      </div>
+
+      <!-- SUBSCRIBERS TAB -->
+      <div class="tab-panel" id="panel-subscribers">
+        <div class="page-header">
+          <h1 class="page-title">Subscribers</h1>
+          <div class="header-actions">
+            <input type="text" class="search-input" placeholder="Search by name or email..." oninput="filterTable('subs-table', this.value)">
+            <button class="btn-export" onclick="exportCSV('subs-table', 'subscribers')">Export CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="subs-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Subscribed</th><th>Status</th></tr></thead>
+            <tbody id="subs-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- FEEDBACK TAB -->
+      <div class="tab-panel" id="panel-feedback">
+        <div class="page-header">
+          <h1 class="page-title">Feedback</h1>
+          <div class="header-actions">
+            <input type="text" class="search-input" placeholder="Search feedback..." oninput="filterTable('feedback-table', this.value)">
+            <button class="btn-export" onclick="exportCSV('feedback-table', 'feedback')">Export CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="feedback-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Country</th><th>Message</th><th>Date</th></tr></thead>
+            <tbody id="feedback-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- COUNTRIES TAB -->
+      <div class="tab-panel" id="panel-countries">
+        <div class="page-header">
+          <h1 class="page-title">Countries</h1>
+        </div>
+        <div class="countries-grid" id="countries-grid"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
