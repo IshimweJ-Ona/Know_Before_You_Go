@@ -21,6 +21,12 @@ A simple, public travel information platform for African destinations. Travelers
 
 If you use a local static server (recommended), make sure its URL is included in `ALLOWED_ORIGINS` in `.env`.
 
+**Start the System (Local)**
+1. Start the backend API from `backend/`: `npm run dev`.
+2. Start a static server for the frontend (or open the HTML files directly).
+3. Open the public app: `frontend/user/index.html`.
+4. Open the admin app: `frontend/admin/index.html`.
+
 **Backend Overview**
 - Framework: Express
 - Security: `helmet`, CORS allow-list, and global rate limiting
