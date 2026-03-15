@@ -10,11 +10,11 @@ const API = {
 
     async getCountryData(code) {
         const [visa, health, dosDonts, general, emergency] = await Promise.all([
-            fetch(`${API_BASE}/api/visa?country=${code}`),
-            fetch(`${API_BASE}/api/health?country=${code}`),
-            fetch(`${API_BASE}/api/dos-donts?country=${code}`),
-            fetch(`${API_BASE}/api/general?country=${code}`),
-            fetch(`${API_BASE}/api/emergency?country=${code}`),
+            fetch(`${API_BASE}/api/visa/${code}`),
+            fetch(`${API_BASE}/api/health/${code}`),
+            fetch(`${API_BASE}/api/dos-donts/${code}`),
+            fetch(`${API_BASE}/api/general/${code}`),
+            fetch(`${API_BASE}/api/emergency/${code}`),
         ]);
         for (const r of [visa, health, dosDonts, general, emergency]) {
             if (!r.ok) throw { status: r.status };
