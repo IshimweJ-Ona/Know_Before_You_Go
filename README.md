@@ -14,7 +14,7 @@ A simple, public travel information platform for African destinations. Travelers
 **Quick Start (Local)**
 1. Backend setup: `cd backend`, then `npm install`, then copy env file `cp .env.example .env`.
 2. Update values in `.env`: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`, `JWT_SECRET`, and `ALLOWED_ORIGINS`.
-3. Database setup (Supabase SQL editor): run `database/migrations/001_create_tables.sql`, then `database/migrations/002_add_feedback.sql`, then `database/seeds/seed_data.sql`.
+3. Database setup (Supabase SQL editor): run `database/migrations/001_create_tables.sql`, then `database/migrations/002_add_feedback.sql`, then `database/migrations/003_add_transport_housing.sql`, then `database/migrations/004_align_with_info_resources.sql`, then `database/seeds/seed_data.sql`.
 4. Start the API: `npm run dev` (development) or `npm start` (production).
 5. Frontend setup (static): update `API_BASE` in `frontend/user/js/config.js` and `ADMIN_API` in `frontend/admin/js/admin.js`.
 6. Open the apps: `frontend/user/index.html` and `frontend/admin/index.html`.
