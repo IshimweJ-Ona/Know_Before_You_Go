@@ -87,4 +87,31 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+// PATCH /api/v1/admin/countries/:code â€” update transportation/housing
+router.patch('/countries/:code', async (req, res) => {
+  try {
+    const code = req.params.code.toUpperCase();
+    const { transportation, housing } = req.body || {};
+    const updates = {};
+    if (transportation !== undefined) updates.transportation = transportation;
+    if (housing !== undefined) updates.housing = housing;
+    if (!Object.keys(updates).length) {
+      return res.status(400).json({ error: 'No valid fields provided' });
+    }
+
+    const { data, error } = await supabase
+      .from('countries')
+      .update(updates)
+      .eq('country_code', code)
+      .select('*')
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Country not found' });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
