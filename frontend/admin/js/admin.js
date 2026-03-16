@@ -10,6 +10,8 @@
 const ADMIN_API = 'http://localhost:5000'; // Change to deployed URL
 
 let TOKEN = localStorage.getItem('kbyg_admin_token') || null;
+let COUNTRIES = [];
+let SELECTED = null;
 
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
@@ -113,6 +115,7 @@ async function loadCountries() {
   try {
     const data = await adminApi('/api/v1/countries');
     const list = Array.isArray(data) ? data : (data.countries || data.data || []);
+    COUNTRIES = list;
     renderCountriesGrid(list);
     document.getElementById('stat-countries').textContent = list.length;
   } catch (err) {
@@ -153,14 +156,18 @@ function renderFeedbackTable(list) {
 function renderCountriesGrid(list) {
   const grid = document.getElementById('countries-grid');
   if (!list.length) { grid.innerHTML = `<p class="empty-state">No countries found.</p>`; return; }
-  grid.innerHTML = list.map(c => `
-    <div class="country-item">
-      <div class="country-flag">${c.flag || ''}</div>
-      <div>
-        <div class="country-info-name">${c.country_name || c.name || ''}</div>
-        <div class="country-info-code">${c.country_code || c.code || ''}</div>
-      </div>
-    </div>`).join('');
+  grid.innerHTML = list.map(c => {
+    const code = (c.country_code || c.code || '').toUpperCase();
+    const on = SELECTED && (SELECTED.country_code || SELECTED.code || '').toUpperCase() === code ? 'on' : '';
+    return `
+      <button type="button" class="country-item ${on}" onclick="selectCountry('${code}')">
+        <div class="country-flag">${c.flag || ''}</div>
+        <div>
+          <div class="country-info-name">${c.country_name || c.name || ''}</div>
+          <div class="country-info-code">${code}</div>
+        </div>
+      </button>`;
+  }).join('');
 }
 
 function renderRecentSubs(list) {
@@ -174,6 +181,53 @@ function renderRecentSubs(list) {
       </div>
       <div class="recent-date">${formatDate(s.created_at || s.subscribedAt)}</div>
     </div>`).join('');
+}
+
+/* â”€â”€ COUNTRY EDITOR â”€â”€ */
+function selectCountry(code) {
+  const found = COUNTRIES.find(c => (c.country_code || c.code || '').toUpperCase() === code);
+  if (!found) return;
+  SELECTED = found;
+  document.getElementById('editor-empty').style.display = 'none';
+  document.getElementById('editor-form').style.display = 'block';
+  document.getElementById('editor-title').textContent = `${found.country_name || found.name || ''} (${code})`;
+  document.getElementById('edit-transportation').value = found.transportation || '';
+  document.getElementById('edit-housing').value = found.housing || '';
+  const msg = document.getElementById('editor-msg');
+  msg.textContent = '';
+  msg.className = 'editor-msg';
+  renderCountriesGrid(COUNTRIES);
+}
+
+async function saveCountry() {
+  if (!SELECTED) return;
+  const code = (SELECTED.country_code || SELECTED.code || '').toUpperCase();
+  const transportation = document.getElementById('edit-transportation').value.trim();
+  const housing = document.getElementById('edit-housing').value.trim();
+  const btn = document.getElementById('save-country-btn');
+  const msg = document.getElementById('editor-msg');
+  msg.textContent = '';
+  msg.className = 'editor-msg';
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    const updated = await adminApi(`/api/v1/admin/countries/${code}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ transportation, housing }),
+    });
+    const idx = COUNTRIES.findIndex(c => (c.country_code || c.code || '').toUpperCase() === code);
+    if (idx >= 0) {
+      COUNTRIES[idx] = { ...COUNTRIES[idx], ...updated };
+      SELECTED = COUNTRIES[idx];
+    }
+    msg.textContent = 'Saved successfully.';
+    msg.className = 'editor-msg ok';
+    renderCountriesGrid(COUNTRIES);
+  } catch (err) {
+    msg.textContent = err.message || 'Save failed.';
+    msg.className = 'editor-msg err';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save changes';
+  }
 }
 
 /* ── TABS ── */

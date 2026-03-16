@@ -35,24 +35,19 @@
       <div class="sidebar-logo">KBYG</div>
       <nav class="sidebar-nav">
         <button class="nav-item on" onclick="showTab('overview')" id="tab-overview">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
           Overview
         </button>
         <button class="nav-item" onclick="showTab('subscribers')" id="tab-subscribers">
-          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           Subscribers
         </button>
         <button class="nav-item" onclick="showTab('feedback')" id="tab-feedback">
-          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Feedback
         </button>
         <button class="nav-item" onclick="showTab('countries')" id="tab-countries">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           Countries
         </button>
       </nav>
       <button class="logout-btn" onclick="doLogout()">
-        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Sign out
       </button>
     </aside>
@@ -128,7 +123,26 @@
         <div class="page-header">
           <h1 class="page-title">Countries</h1>
         </div>
-        <div class="countries-grid" id="countries-grid"></div>
+        <div class="countries-layout">
+          <div class="countries-grid" id="countries-grid"></div>
+          <div class="country-editor">
+            <div class="section-title">Edit Country</div>
+            <div class="editor-empty" id="editor-empty">Select a country to edit transportation and housing details.</div>
+            <div id="editor-form" style="display:none;">
+              <div class="editor-title" id="editor-title"></div>
+              <div class="f-group">
+                <label class="f-label" for="edit-transportation">Transportation</label>
+                <textarea class="f-input f-textarea" id="edit-transportation" rows="5" placeholder="Add transportation notes..."></textarea>
+              </div>
+              <div class="f-group">
+                <label class="f-label" for="edit-housing">Housing</label>
+                <textarea class="f-input f-textarea" id="edit-housing" rows="5" placeholder="Add housing notes..."></textarea>
+              </div>
+              <button class="btn-primary" id="save-country-btn" onclick="saveCountry()">Save changes</button>
+              <div class="editor-msg" id="editor-msg"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </main>

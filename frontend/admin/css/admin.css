@@ -97,7 +97,6 @@ body {
   color: var(--sub); background: none; border: none; cursor: pointer;
   transition: background 0.18s, color 0.18s; text-align: left;
 }
-.nav-item svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; display: block; }
 .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
 .nav-item.on    { background: rgba(123,97,255,0.12); color: var(--text); }
 .logout-btn {
@@ -108,7 +107,6 @@ body {
   transition: color 0.2s;
 }
 .logout-btn:hover { color: var(--accent); }
-.logout-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.8; display: block; }
 
 /* ── MAIN CONTENT ── */
 #main { padding: 36px 40px; overflow-y: auto; }
@@ -166,15 +164,31 @@ body {
 }
 .btn-export:hover { color: var(--green); border-color: rgba(0,232,184,0.4); }
 
-/* ── COUNTRIES GRID ── */
+/* ── COUNTRIES ── */
+.countries-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: start; }
 .countries-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
 .country-item {
   background: var(--card2); border: 1px solid var(--border); border-radius: var(--r);
   padding: 16px 18px; display: flex; align-items: center; gap: 12px;
+  cursor: pointer; text-align: left; width: 100%;
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  appearance: none;
 }
+.country-item:hover { border-color: var(--border2); background: rgba(255,255,255,0.02); }
+.country-item.on { border-color: rgba(123,97,255,0.45); background: rgba(123,97,255,0.08); }
 .country-flag { font-size: 1.8rem; line-height: 1; flex-shrink: 0; }
 .country-info-name { font-weight: 600; font-size: 0.88rem; line-height: 1.2; }
 .country-info-code { font-family: 'Space Mono', monospace; font-size: 0.52rem; letter-spacing: 2px; color: var(--muted); margin-top: 3px; }
+.country-editor {
+  background: var(--card2); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 20px 22px;
+}
+.editor-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 10px; }
+.editor-empty { color: var(--muted); font-size: 0.84rem; }
+.f-textarea { min-height: 120px; resize: vertical; }
+.editor-msg { margin-top: 10px; font-size: 0.82rem; color: var(--muted); }
+.editor-msg.ok { color: var(--green); }
+.editor-msg.err { color: var(--accent); }
 
 /* Empty state */
 .empty-state { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 0.84rem; }
@@ -199,4 +213,5 @@ body {
   .sidebar-nav { flex-direction: row; flex-wrap: wrap; }
   .logout-btn { padding: 10px 14px; margin-top: 0; }
   #main { padding: 24px 18px; }
+  .countries-layout { grid-template-columns: 1fr; }
 }
