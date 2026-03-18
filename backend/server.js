@@ -1,69 +1,107 @@
-'use strict';
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+import crypto from "crypto";
+import rateLimit from "express-rate-limit";
 
-const express    = require('express');
-const cors       = require('cors');
-const helmet     = require('helmet');
-const rateLimit  = require('express-rate-limit');
-require('dotenv').config();
+import aiRoutes from "./routes/aiRoutes.js";
+import countryRoutes from "./routes/countryRoutes.js";
+import v1Routes from "./routes/v1Routes.js";
+import pool from "./config/db.js";
+
+dotenv.config();
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const userFrontendPath = path.join(__dirname, "..", "frontend", "user");
+const adminFrontendPath = path.join(__dirname, "..", "frontend", "admin");
 
-/* ── SECURITY ── */
-app.use(helmet());
+const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:3000,http://localhost:5173,http://localhost:5000")
+    .split(",")
+    .map(origin => origin.trim())
+    .filter(Boolean);
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error("Not allowed by CORS"));
+    },
+}));
 app.use(express.json());
 
-// CORS — allow configured origins
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',');
-app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    cb(new Error('Not allowed by CORS'));
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-
-// Global rate limiter
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-  message: { error: 'Too many requests. Please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-}));
-
-/* ── ROUTES ── */
-app.use('/api/v1/countries',  require('./routes/countries'));
-app.use('/api/v1/visa',       require('./routes/visa'));
-app.use('/api/v1/health',     require('./routes/health'));
-app.use('/api/v1/dosDonts',   require('./routes/dosDonts'));
-app.use('/api/v1/general',    require('./routes/general'));
-app.use('/api/v1/emergency',  require('./routes/emergency'));
-app.use('/api/v1/newsletter', require('./routes/newsletter'));
-app.use('/api/v1/feedback',   require('./routes/feedback'));
-app.use('/api/v1/auth',       require('./routes/auth'));
-app.use('/api/v1/users',      require('./routes/users'));
-app.use('/api/v1/admin',      require('./routes/admin'));
-
-/* ── HEALTH CHECK ── */
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.use((req, res, next) => {
+    req.id = crypto.randomUUID();
+    res.setHeader("X-Request-Id", req.id);
+    const start = Date.now();
+    res.on("finish", () => {
+        const durationMs = Date.now() - start;
+        console.log(`${req.id} ${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs}ms`);
+    });
+    next();
 });
 
-/* ── 404 ── */
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+const aiLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    limit: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 
-/* ── ERROR HANDLER ── */
-app.use((err, req, res, next) => {
-  console.error('[KBYG Error]', err.message);
-  const status = err.status || err.statusCode || 500;
-  res.status(status).json({ error: err.message || 'Internal server error' });
+const adminLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    limit: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 
-/* ── START ── */
+app.use("/api/ai", aiLimiter, aiRoutes);
+app.use("/api/countries", countryRoutes);
+app.use("/api/v1/admin", adminLimiter);
+app.use("/api/v1", v1Routes);
+
+app.use("/admin", express.static(adminFrontendPath));
+app.use(express.static(userFrontendPath));
+app.get("/", (_req, res) => {
+    res.sendFile(path.join(userFrontendPath, "index.html"));
+});
+app.get("/favicon.ico", (_req, res) => {
+    res.status(204).end();
+});
+
+app.get("/health", (_req, res) => {
+    res.status(200).json({ ok: true });
+});
+
+app.get("/ready", async (_req, res) => {
+    try {
+        await pool.query("SELECT 1");
+        res.status(200).json({ ok: true });
+    } catch (error) {
+        res.status(500).json({ ok: false, message: "Dependency check failed." });
+    }
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`[KBYG] Server running on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
+
+const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}, http://localhost:5000`);
 });
+
+server.on("error", (error) => {
+    console.error("Server startup error:", error?.message || error);
+});
+
+process.on("unhandledRejection", (error) => {
+    console.error("Unhandled rejection:", error?.message || error);
+});
+
+process.on("uncaughtException", (error) => {
+    console.error("Uncaught exception:", error?.message || error);
+});
+
+export { app, server };

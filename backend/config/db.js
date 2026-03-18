@@ -1,18 +1,17 @@
-'use strict';
+import mysql from "mysql2/promise";
+import dotenv from "dotenv";
 
-const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config();
+dotenv.config();
 
-const supabaseUrl        = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_KEY in environment variables.');
-}
-
-// Use the service role key for server-side operations — bypasses Row Level Security
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: { persistSession: false },
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD, 
+    database: process.env.DB_NAME,
+    port: Number(process.env.DB_PORT),
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
 });
 
-module.exports = supabase;
+export default pool;

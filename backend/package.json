@@ -1,26 +1,25 @@
 {
-  "name": "know-before-you-go-api",
+  "name": "backend",
   "version": "1.0.0",
-  "description": "Backend API for the Know Before You Go travel information platform",
-  "main": "server.js",
+  "type": "module",
+  "main": "main.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "express-rate-limit": "^7.1.5",
-    "helmet": "^7.1.0",
-    "jsonwebtoken": "^9.0.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.2"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.1",
+    "groq-sdk": "^1.1.1",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.20.0"
   }
 }

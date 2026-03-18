@@ -67,12 +67,27 @@
         <div class="hero-kicker">Travel smart, travel safe</div>
         <h1 class="hero-h1">KNOW <em>BEFORE</em><br>YOU GO</h1>
         <p class="hero-sub">Everything you need before you land — visa rules, cultural guidelines, health alerts, and emergency contacts in one place.</p>
-        <div class="search-wrap">
-          <input type="text" class="search-input" id="search"
-            placeholder="Search a destination..." oninput="filterCountries(this.value)" autocomplete="off">
-          <button class="search-btn" aria-label="Search">
-            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-          </button>
+        <div class="search-row">
+          <div class="search-wrap">
+            <input type="text" class="search-input" id="search"
+              placeholder="Search a destination..." oninput="filterCountries()" autocomplete="off">
+            <button class="search-btn" aria-label="Search">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+            </button>
+          </div>
+          <div class="filter-wrap">
+            <div class="chip-group" data-group="visa">
+              <button class="chip on" onclick="setChip(this)" data-value="all">All visas</button>
+              <button class="chip" onclick="setChip(this)" data-value="free">Visa free</button>
+            </div>
+            <div class="chip-group" data-group="region">
+              <button class="chip on" onclick="setChip(this)" data-value="all">All regions</button>
+              <button class="chip" onclick="setChip(this)" data-value="east">East Africa</button>
+              <button class="chip" onclick="setChip(this)" data-value="west">West Africa</button>
+              <button class="chip" onclick="setChip(this)" data-value="north">North Africa</button>
+              <button class="chip" onclick="setChip(this)" data-value="southern">Southern Africa</button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -100,6 +115,7 @@
       <footer>
         <div class="footer-logo">KBYG</div>
         <div class="footer-copy">Travel Information Platform &nbsp;&mdash;&nbsp; Data from official government sources</div>
+        <button class="nav-nl-btn" style="margin-top:14px;" onclick="switchToAdmin()">Switch to admin</button>
       </footer>
 
     </div><!-- /home -->
@@ -137,8 +153,15 @@
           <div class="s-head"><h2>Quick Info</h2><p id="d-desc"></p></div>
           <div class="i-grid" id="d-tiles"></div>
           <div class="s-rule"></div>
+          <div class="s-head"><h2>Transportation &amp; Housing</h2><p>How to get around and where to stay.</p></div>
+          <div class="th-grid" id="d-th"></div>
+          <div class="s-rule"></div>
           <div class="s-head"><h2>Highlights</h2><p>A snapshot of places worth seeing.</p></div>
           <div class="pstrip" id="d-strip"></div>
+          <div class="s-rule"></div>
+          <div class="s-head"><h2>AI Summary</h2><p>Generated overview from the travel assistant.</p></div>
+          <div id="d-ai" class="prose">Loading summary...</div>
+          <button class="btn-primary" style="margin-top:12px;" onclick="requestMoreInfo()">More info</button>
         </div>
 
         <div class="panel" id="p-places">
@@ -175,6 +198,7 @@
       <footer>
         <div class="footer-logo">KBYG</div>
         <div class="footer-copy">Always verify information with official sources before travel</div>
+        <button class="nav-nl-btn" style="margin-top:14px;" onclick="switchToAdmin()">Switch to admin</button>
       </footer>
 
     </div><!-- /detail -->

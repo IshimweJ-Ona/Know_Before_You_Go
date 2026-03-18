@@ -22,24 +22,24 @@ const COUNTRY_IMAGES = {
 
 /* ── SVG ICONS ── */
 const IC = {
-  cap:   `<svg viewBox="0 0 24 24"><path d="M3 21h18M9 21V9l3-6 3 6v12M3 21V9l9-6 9 6v12"/></svg>`,
-  money: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.8 9A2 2 0 0 0 13 8h-2a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4h-2a2 2 0 0 1-1.8-1M12 7v1m0 8v1"/></svg>`,
-  lang:  `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-  pop:   `<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  plug:  `<svg viewBox="0 0 24 24"><path d="M7 2v7m10-7v7M5 9h14l-1.5 9H6.5L5 9z"/></svg>`,
-  clock: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>`,
-  tip:   `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg>`,
-  temp:  `<svg viewBox="0 0 24 24"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>`,
-  pass:  `<svg viewBox="0 0 24 24"><rect x="3" y="2" width="18" height="20" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M7 20h10M9 14h6"/></svg>`,
-  chk:   `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`,
-  x:     `<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
-  warn:  `<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
-  syr:   `<svg viewBox="0 0 24 24"><path d="m18 2 4 4M7.5 11.5 11 8l5 5-3.5 3.5M7 13l-5 5 2 2 5-5M3 21l2-2M10 4l4 4-6 6-4-4z"/></svg>`,
-  shld:  `<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
-  pol:   `<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
-  amb:   `<svg viewBox="0 0 24 24"><rect x="1" y="8" width="22" height="13" rx="2"/><path d="M16 8V4H8v4M12 12v6m-3-3h6"/></svg>`,
-  fire:  `<svg viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 17c0 1.5-1 2-1 3s1 2 2 2 2-1 2-2-1-1.5-1-3a2.5 2.5 0 0 0 2.5-2.5c0-3-5-8-5-8s-2 3-2 5.5z"/></svg>`,
-  sos:   `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  cap:   '',
+  money: '',
+  lang:  '',
+  pop:   '',
+  plug:  '',
+  clock: '',
+  tip:   '',
+  temp:  '',
+  pass:  '',
+  chk:   '',
+  x:     '',
+  warn:  '',
+  syr:   '',
+  shld:  '',
+  pol:   '',
+  amb:   '',
+  fire:  '',
+  sos:   '',
 };
 
 /* ── DOM HELPERS ── */
@@ -62,6 +62,46 @@ function toast(msg, type = 'ok') {
   el.className   = `show ${type}`;
   clearTimeout(el._t);
   el._t = setTimeout(() => { el.className = ''; }, 3400);
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderAiSummary(text, country) {
+  const name = country?.country_name || country?.name || 'this destination';
+  const safeText = (text || '').trim();
+  if (!safeText) {
+    setEl('d-ai', `<div class="ai-empty">AI summary unavailable.</div>`);
+    return;
+  }
+
+  const lines = safeText.split('\n').map(l => l.trim()).filter(Boolean);
+  const bullets = lines
+    .filter(l => /^[-*•]/.test(l))
+    .map(l => l.replace(/^[-*•]\s*/, '').trim())
+    .filter(Boolean);
+  const paragraphs = lines.filter(l => !/^[-*•]/.test(l));
+
+  const paraHtml = paragraphs.length
+    ? paragraphs.map(p => `<p>${escapeHtml(p)}</p>`).join('')
+    : '';
+  const bulletHtml = bullets.length
+    ? `<ul class="ai-bullets">${bullets.slice(0, 6).map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>`
+    : '';
+
+  setEl('d-ai', `
+    <div class="ai-card">
+      <div class="ai-title">AI Highlights for ${escapeHtml(name)}</div>
+      ${paraHtml}
+      ${bulletHtml}
+    </div>
+  `);
 }
 
 /* ── BOOT ── */
@@ -205,13 +245,33 @@ function renderCountries(list) {
       </div>`;
   }).join(''));
 }
+function getChipValue(group) {
+  return (document.querySelector(`.chip-group[data-group="${group}"] .chip.on`)?.dataset.value || 'all').toLowerCase();
+}
+
+function setChip(btn) {
+  const group = btn.closest('.chip-group');
+  if (!group) return;
+  group.querySelectorAll('.chip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  filterCountries();
+}
+
 function filterCountries(q) {
-  const lq = q.toLowerCase();
-  const visible = ALL.filter(c=>
-    (c.country_name||c.name||'').toLowerCase().includes(lq)||
-    (c.region||'').toLowerCase().includes(lq)||
-    (c.capital||'').toLowerCase().includes(lq)
-  );
+  const query = (typeof q === 'string' ? q : (document.getElementById('search')?.value || '')).toLowerCase();
+  const visaFilter = getChipValue('visa');
+  const regionFilter = getChipValue('region');
+  const visible = ALL.filter((c) => {
+    const name = (c.country_name || c.name || '').toLowerCase();
+    const region = (c.region || '').toLowerCase();
+    const capital = (c.capital || '').toLowerCase();
+    const visa = (c.visa_status || c.visaStatus || '').toLowerCase();
+    const matchesQuery = !query || name.includes(query) || region.includes(query) || capital.includes(query);
+    if (!matchesQuery) return false;
+    if (visaFilter === 'free' && !visa.includes('free')) return false;
+    if (regionFilter !== 'all' && !region.includes(regionFilter)) return false;
+    return true;
+  });
   renderCountries(visible);
   setTxt('count-lbl',`${visible.length} destination${visible.length!==1?'s':''}`);
 }
@@ -227,21 +287,16 @@ async function openCountry(code) {
   setTxt('d-name','Loading');
   ['d-flag','d-reg','d-adv','d-desc'].forEach(id=>setTxt(id,''));
   const ph=`<div class="skel" style="height:80px;"></div>`;
-  ['d-tiles','d-strip','d-places','d-dd','d-legal','d-visa','d-health','d-em'].forEach(id=>setEl(id,ph));
+  ['d-tiles','d-th','d-strip','d-places','d-dd','d-legal','d-visa','d-health','d-em'].forEach(id=>setEl(id,ph));
 
   try {
-    const [country, visa, health, emergency, dd] = await Promise.all([
-      api(EP.COUNTRY(code)),
-      api(EP.VISA(code)).catch(()=>({})),
-      api(EP.HEALTH(code)).catch(()=>({})),
-      api(EP.EMERGENCY(code)).catch(()=>({})),
-      api(EP.DOS_DONTS(code)).catch(()=>({})),
-    ]);
-    const c  = country.country   ||country.data   ||country;
-    const v  = visa.visa         ||visa.data       ||visa    ||{};
-    const h  = health.health     ||health.data     ||health  ||{};
-    const em = emergency.emergency||emergency.data ||emergency||{};
-    const d  = dd.guidelines     ||dd.data         ||dd      ||{};
+    const data = await api(EP.COUNTRY_AI(code));
+    const c  = data.country   ||{};
+    const v  = data.visa      ||{};
+    const h  = data.health    ||{};
+    const em = data.emergency ||{};
+    const d  = data.guidelines||{};
+    const ai = data.aiText    || '';
     buildHero(c, code);
     buildOverview(c);
     buildPlaces(c);
@@ -249,6 +304,8 @@ async function openCountry(code) {
     buildVisa(v,c);
     buildHealth(h,c);
     buildEmergency(em);
+    renderAiSummary(ai, c);
+    window._aiCountry = c;
   } catch(err) {
     console.error('[KBYG] Country load error:',err.message);
     toast('Failed to load country data. Please try again.','err');
@@ -272,6 +329,9 @@ function buildHero(c, code) {
 function tile(ico,lbl,val){
   return `<div class="i-tile"><div class="i-ico">${ico}</div><div class="i-lbl">${lbl}</div><div class="i-val">${val}</div></div>`;
 }
+function thCard(lbl, val){
+  return `<div class="th-card"><div class="th-title">${lbl}</div><div class="th-text">${val||'N/A'}</div></div>`;
+}
 
 function buildOverview(c) {
   setTxt('d-desc', c.description||'');
@@ -285,10 +345,17 @@ function buildOverview(c) {
     tile(IC.tip,  'Tipping',    c.tipping||'—'),
     tile(IC.temp, 'Climate',    c.climate||'—'),
   ].join(''));
+  const transport = c.transportation||c.transport||c.transport_info||'N/A';
+  const housing   = c.housing||c.housing_info||'N/A';
+  setEl('d-th', [
+    thCard('Transportation', transport),
+    thCard('Housing', housing),
+  ].join(''));
   const places = c.places||[];
   setEl('d-strip', places.map(p=>
     `<div class="ps-it"><img src="${p.image||p.img||''}" alt="${p.name||''}" loading="lazy"></div>`
   ).join('')||`<p style="color:#a0a0b0;font-size:1rem;">No highlights available.</p>`);
+  setEl('d-ai','Loading summary...');
 }
 
 function buildPlaces(c) {
@@ -426,6 +493,10 @@ function goBack(){
   window.scrollTo(0,0);
 }
 
+function switchToAdmin(){
+  toast('Access denied. Admins only.','err');
+}
+
 /* ── UTILITIES ── */
 function copyNum(num,lbl){
   if(num==='—') return;
@@ -433,3 +504,35 @@ function copyNum(num,lbl){
     .then(()=>toast(`${lbl} number copied: ${num}`))
     .catch(()=>toast(`${lbl}: ${num}`));
 } 
+
+
+async function loadAiSummary(c){
+  try {
+    const name = c.country_name || c.name || 'this destination';
+    const res = await api(EP.AI_QUERY, {
+      method: 'POST',
+      body: JSON.stringify({ query: `Travel information for ${name}` }),
+    });
+    const textOut = res.aiText || '';
+    renderAiSummary(textOut, c);
+  } catch (err) {
+    setEl('d-ai', `<div class="ai-empty">AI summary unavailable.</div>`);
+  }
+}
+
+
+async function requestMoreInfo(){
+  try {
+    const c = window._aiCountry || {};
+    const name = c.country_name || c.name || 'this destination';
+    setEl('d-ai', 'Loading more info...');
+    const res = await api(EP.AI_QUERY, {
+      method: 'POST',
+      body: JSON.stringify({ query: `More info about ${name}` }),
+    });
+    const textOut = res.aiText || '';
+    renderAiSummary(textOut, c);
+  } catch (err) {
+    setEl('d-ai', `<div class="ai-empty">AI summary unavailable.</div>`);
+  }
+}
