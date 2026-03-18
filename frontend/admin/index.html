@@ -1,386 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin — Know Before You Go</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KBYG Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/admin.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">
-      <h1>Admin Dashboard</h1>
-      <p>Know Before You Go</p>
-    </div>
-    <div class="login-error" id="login-error"></div>
-    <div class="form-group">
-      <label class="form-label">Email Address</label>
-      <input type="email" class="form-input" id="login-email" placeholder="admin@kbyg.com" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">Password</label>
-      <input type="password" class="form-input" id="login-password" placeholder="Password" />
-    </div>
-    <button class="btn btn-primary btn-full" id="login-btn" onclick="handleLogin()">Sign In</button>
-  </div>
-</div>
-
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <a href="../user/index.html" class="logo-badge">
-      <div class="logo-text">Know Before You Go<span>Admin Panel</span></div>
-    </a>
-  </div>
-
-  <nav class="sidebar-nav">
-    <div class="nav-section-label">Overview</div>
-    <button class="nav-item active" onclick="showPage('dashboard', this)">Dashboard</button>
-
-    <div class="nav-section-label">Travel Data</div>
-    <button class="nav-item" onclick="showPage('countries', this)">Countries</button>
-    <button class="nav-item" onclick="showPage('visa', this)">Visa Requirements</button>
-    <button class="nav-item" onclick="showPage('health', this)">Health</button>
-    <button class="nav-item" onclick="showPage('dosdont', this)">Dos and Don'ts</button>
-    <button class="nav-item" onclick="showPage('general', this)">General Entry</button>
-    <button class="nav-item" onclick="showPage('emergency', this)">Emergency</button>
-
-    <div class="nav-section-label">Community</div>
-    <button class="nav-item" onclick="showPage('feedback', this)">Feedback</button>
-    <button class="nav-item" onclick="showPage('subscribers', this)">Subscribers</button>
-    <button class="nav-item" onclick="showPage('users', this)">Users</button>
-  </nav>
-
-  <div class="sidebar-footer">
-    <div class="admin-pill">
-      <div class="admin-avatar" id="sidebar-avatar">A</div>
-      <div class="admin-info">
-        <div class="admin-name" id="sidebar-name">Admin</div>
-        <div class="admin-role">Administrator</div>
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">KBYG</div>
+      <div class="login-sub">Admin Dashboard</div>
+      <div class="f-error" id="login-err"></div>
+      <div class="f-group">
+        <label class="f-label" for="login-email">Email</label>
+        <input type="email" class="f-input" id="login-email" placeholder="admin@kbyg.com" autocomplete="email">
       </div>
-      <button class="logout-btn" onclick="handleLogout()">Sign out</button>
-    </div>
-  </div>
-</aside>
-
-<!-- MAIN -->
-<main class="main">
-
-  <div class="topbar">
-    <div class="topbar-title" id="topbar-title">Dashboard <span>Overview</span></div>
-    <div class="topbar-actions">
-      <div class="status-dot"></div>
-      <span class="status-label">API connected</span>
+      <div class="f-group">
+        <label class="f-label" for="login-password">Password</label>
+        <input type="password" class="f-input" id="login-password" placeholder="Password" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign in</button>
     </div>
   </div>
 
-  <!-- Dashboard -->
-  <div class="page active" id="page-dashboard">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Countries</div>
-        <div class="stat-value" id="stat-countries">-</div>
-        <div class="stat-sub">In database</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Users</div>
-        <div class="stat-value" id="stat-users">-</div>
-        <div class="stat-sub">Registered accounts</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Subscribers</div>
-        <div class="stat-value" id="stat-subscribers">-</div>
-        <div class="stat-sub">Newsletter list</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Feedback</div>
-        <div class="stat-value" id="stat-feedback">-</div>
-        <div class="stat-sub">Reviews submitted</div>
-      </div>
-    </div>
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Recent <span>Feedback</span></div>
-        <button class="btn btn-ghost btn-sm" onclick="showPage('feedback', document.querySelectorAll('.nav-item')[7])">View All</button>
-      </div>
-      <div class="card"><div class="card-body table-wrap">
-        <table>
-          <thead><tr><th>Reviewer</th><th>Country</th><th>Rating</th><th>Comment</th><th>Date</th></tr></thead>
-          <tbody id="recent-feedback-body">
-            <tr class="empty-row"><td colspan="5">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div></div>
-    </div>
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Recent <span>Subscribers</span></div>
-        <button class="btn btn-ghost btn-sm" onclick="showPage('subscribers', document.querySelectorAll('.nav-item')[8])">View All</button>
-      </div>
-      <div class="card"><div class="card-body table-wrap">
-        <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Subscribed</th><th>Status</th></tr></thead>
-          <tbody id="recent-subscribers-body">
-            <tr class="empty-row"><td colspan="4">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div></div>
-    </div>
-  </div>
+  <!-- DASHBOARD -->
+  <div id="dashboard" style="display:none;">
 
-  <!-- Countries -->
-  <div class="page" id="page-countries">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Manage <span>Countries</span></div>
-        <button class="btn btn-primary" onclick="openModal('country')">Add Country</button>
-      </div>
-      <div class="filter-bar">
-        <div class="search-wrap">
-          <input class="search-input" placeholder="Search countries..." oninput="filterTable('countries-tbody', this.value, [1,2])">
+    <aside id="sidebar">
+      <div class="sidebar-logo">KBYG</div>
+      <nav class="sidebar-nav">
+        <button class="nav-item on" onclick="showTab('overview')" id="tab-overview">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Overview
+        </button>
+        <button class="nav-item" onclick="showTab('subscribers')" id="tab-subscribers">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Subscribers
+        </button>
+        <button class="nav-item" onclick="showTab('feedback')" id="tab-feedback">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Feedback
+        </button>
+        <button class="nav-item" onclick="showTab('countries')" id="tab-countries">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Countries
+        </button>
+      </nav>
+      <button class="logout-btn" onclick="doLogout()">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </button>
+    </aside>
+
+    <main id="main">
+
+      <!-- OVERVIEW TAB -->
+      <div class="tab-panel on" id="panel-overview">
+        <div class="page-header">
+          <h1 class="page-title">Overview</h1>
+          <span class="page-date" id="today-date"></span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Subscribers</div>
+            <div class="stat-value" id="stat-subs">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Feedback Entries</div>
+            <div class="stat-value" id="stat-feedback">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Countries Active</div>
+            <div class="stat-value" id="stat-countries">10</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">New This Week</div>
+            <div class="stat-value" id="stat-new">—</div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-title">Recent Subscribers</div>
+          <div id="recent-subs-list"></div>
         </div>
       </div>
-      <div class="card"><div class="card-body table-wrap">
-        <table>
-          <thead><tr><th>Flag</th><th>Name</th><th>Code</th><th>Region</th><th>Capital</th><th>Actions</th></tr></thead>
-          <tbody id="countries-tbody">
-            <tr class="empty-row"><td colspan="6">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div></div>
-    </div>
-  </div>
 
-  <!-- Visa -->
-  <div class="page" id="page-visa">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Visa <span>Requirements</span></div>
-        <button class="btn btn-primary" onclick="openModal('visa')">Add Record</button>
-      </div>
-      <div class="filter-bar">
-        <div class="search-wrap">
-          <input class="search-input" placeholder="Search visa records..." oninput="filterTable('visa-tbody', this.value, [0,1])">
+      <!-- SUBSCRIBERS TAB -->
+      <div class="tab-panel" id="panel-subscribers">
+        <div class="page-header">
+          <h1 class="page-title">Subscribers</h1>
+          <div class="header-actions">
+            <input type="text" class="search-input" placeholder="Search by name or email..." oninput="filterTable('subs-table', this.value)">
+            <button class="btn-export" onclick="exportCSV('subs-table', 'subscribers')">Export CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="subs-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Subscribed</th><th>Status</th></tr></thead>
+            <tbody id="subs-body"></tbody>
+          </table>
         </div>
       </div>
-      <div class="card"><div class="card-body table-wrap">
-        <table>
-          <thead><tr><th>Country</th><th>Visa Type</th><th>Duration</th><th>Cost (USD)</th><th>Processing</th><th>Actions</th></tr></thead>
-          <tbody id="visa-tbody">
-            <tr class="empty-row"><td colspan="6">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div></div>
-    </div>
-  </div>
 
-  <!-- Health -->
-  <div class="page" id="page-health">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Health <span>Requirements</span></div>
-        <button class="btn btn-primary" onclick="openModal('health')">Add Record</button>
-      </div>
-      <div class="filter-bar">
-        <div class="search-wrap">
-          <input class="search-input" placeholder="Search health requirements..." oninput="filterTable('health-tbody', this.value, [0,1])">
+      <!-- FEEDBACK TAB -->
+      <div class="tab-panel" id="panel-feedback">
+        <div class="page-header">
+          <h1 class="page-title">Feedback</h1>
+          <div class="header-actions">
+            <input type="text" class="search-input" placeholder="Search feedback..." oninput="filterTable('feedback-table', this.value)">
+            <button class="btn-export" onclick="exportCSV('feedback-table', 'feedback')">Export CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="feedback-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Country</th><th>Message</th><th>Date</th></tr></thead>
+            <tbody id="feedback-body"></tbody>
+          </table>
         </div>
       </div>
-      <div class="card"><div class="card-body table-wrap">
-        <table>
-          <thead><tr><th>Country</th><th>Requirement</th><th>Status</th><th>Notes</th><th>Actions</th></tr></thead>
-          <tbody id="health-tbody">
-            <tr class="empty-row"><td colspan="5">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div></div>
-    </div>
-  </div>
 
-  <!-- Dos and Don'ts -->
-  <div class="page" id="page-dosdont">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Dos and <span>Don'ts</span></div>
-        <button class="btn btn-primary" onclick="openModal('dosdont')">Add Record</button>
-      </div>
-      <div class="filter-bar">
-        <div class="search-wrap">
-          <input class="search-input" placeholder="Search dos and don'ts..." oninput="filterTable('dosdont-tbody', this.value, [0,2])">
+      <!-- COUNTRIES TAB -->
+      <div class="tab-panel" id="panel-countries">
+        <div class="page-header">
+          <h1 class="page-title">Countries</h1>
         </div>
-        <select class="form-select" style="width:auto" onchange="filterByType('dosdont-tbody', this.value, 1)">
-          <option value="">All Types</option>
-          <option value="do">Do</option>
-          <option value="dont">Don't</option>
-        </select>
+        <div class="countries-grid" id="countries-grid"></div>
       </div>
-      <div class="card"><div class="card-body table-wrap">
-        <table>
-          <thead><tr><th>Country</th><th>Type</th><th>Description</th><th>Actions</th></tr></thead>
-          <tbody id="dosdont-tbody">
-            <tr class="empty-row"><td colspan="4">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div></div>
-    </div>
+
+    </main>
   </div>
 
-  <!-- General Entry -->
-  <div class="page" id="page-general">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">General Entry <span>Requirements</span></div>
-        <button class="btn btn-primary" onclick="openModal('general')">Add Record</button>
-      </div>
-      <div class="filter-bar">
-        <div class="search-wrap">
-          <input class="search-input" placeholder="Search requirements..." oninput="filterTable('general-tbody', this.value, [0,1])">
-        </div>
-      </div>
-      <div class="card"><div class="card-body table-wrap">
-        <table>
-          <thead><tr><th>Country</th><th>Title</th><th>Description</th><th>Mandatory</th><th>Actions</th></tr></thead>
-          <tbody id="general-tbody">
-            <tr class="empty-row"><td colspan="5">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div></div>
-    </div>
-  </div>
-
-  <!-- Emergency -->
-  <div class="page" id="page-emergency">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Emergency <span>Contacts</span></div>
-        <button class="btn btn-primary" onclick="openModal('emergency')">Add Contact</button>
-      </div>
-      <div class="filter-bar">
-        <div class="search-wrap">
-          <input class="search-input" placeholder="Search emergency contacts..." oninput="filterTable('emergency-tbody', this.value, [0,1])">
-        </div>
-      </div>
-      <div class="card"><div class="card-body table-wrap">
-        <table>
-          <thead><tr><th>Country</th><th>Embassy / Service</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
-          <tbody id="emergency-tbody">
-            <tr class="empty-row"><td colspan="5">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div></div>
-    </div>
-  </div>
-
-  <!-- Feedback -->
-  <div class="page" id="page-feedback">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">User <span>Feedback</span></div>
-      </div>
-      <div class="filter-bar">
-        <div class="search-wrap">
-          <input class="search-input" placeholder="Search feedback..." oninput="filterTable('feedback-tbody', this.value, [0,1,3])">
-        </div>
-      </div>
-      <div class="card"><div class="card-body table-wrap">
-        <table>
-          <thead><tr><th>User</th><th>Country</th><th>Rating</th><th>Comment</th><th>Date</th><th>Actions</th></tr></thead>
-          <tbody id="feedback-tbody">
-            <tr class="empty-row"><td colspan="6">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div></div>
-    </div>
-  </div>
-
-  <!-- Subscribers -->
-  <div class="page" id="page-subscribers">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Newsletter <span>Subscribers</span></div>
-      </div>
-      <div class="filter-bar">
-        <div class="search-wrap">
-          <input class="search-input" placeholder="Search subscribers..." oninput="filterTable('subscribers-tbody', this.value, [0,1])">
-        </div>
-      </div>
-      <div class="card"><div class="card-body table-wrap">
-        <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Subscribed</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody id="subscribers-tbody">
-            <tr class="empty-row"><td colspan="5">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div></div>
-    </div>
-  </div>
-
-  <!-- Users -->
-  <div class="page" id="page-users">
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">Registered <span>Users</span></div>
-      </div>
-      <div class="filter-bar">
-        <div class="search-wrap">
-          <input class="search-input" placeholder="Search users..." oninput="filterTable('users-tbody', this.value, [0,1])">
-        </div>
-      </div>
-      <div class="card"><div class="card-body table-wrap">
-        <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
-          <tbody id="users-tbody">
-            <tr class="empty-row"><td colspan="5">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div></div>
-    </div>
-  </div>
-
-</main>
-
-<!-- MODAL -->
-<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title">Add Record</div>
-      <button class="modal-close" onclick="closeModal()">x</button>
-    </div>
-    <div class="modal-body" id="modal-body"></div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" id="modal-save-btn" onclick="saveModal()">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- CONFIRM DELETE -->
-<div class="confirm-overlay" id="confirm-overlay">
-  <div class="confirm-box">
-    <div class="confirm-title">Delete Record?</div>
-    <div class="confirm-msg" id="confirm-msg">This action cannot be undone.</div>
-    <div class="confirm-actions">
-      <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
-      <button class="btn btn-danger" id="confirm-ok-btn">Delete</button>
-    </div>
-  </div>
-</div>
-
-<!-- TOASTS -->
-<div class="toast-container" id="toast-container"></div>
-
-<!-- Scripts: api -> ui -> nav -> modal -> data -> auth -->
-<script src="js/api.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/nav.js"></script>
-<script src="js/modal.js"></script>
-<script src="js/data.js"></script>
-<script src="js/auth.js"></script>
-
+  <script src="js/admin.js"></script>
 </body>
 </html>

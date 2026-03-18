@@ -1,64 +1,41 @@
-/**
- * Countries API Endpoint
- * GET /api/countries
- * 
- * Returns all African countries in the database with their metadata
- * Used by frontend to populate the country selector dropdown
- */
+'use strict';
 
-const { query } = require('../config/database');
+const express  = require('express');
+const router   = express.Router();
+const supabase = require('../config/db');
 
-/**
- * GET /api/countries
- * Fetch all countries
- * 
- * Response:
- * {
- *   success: true,
- *   count: 10,
- *   data: [
- *     {
- *       country_code: "RWA",
- *       name: "Rwanda",
- *       region: "East Africa",
- *       capital: "Kigali",
- *       flag_url: "https://flagcdn.com/rw.svg"
- *     },
- *     ...
- *   ]
- * }
- */
-const getCountries = async (req, res) => {
+// GET /api/v1/countries — all countries
+router.get('/', async (req, res) => {
   try {
-    const result = await query(
-      `SELECT 
-        country_code,
-        name,
-        region,
-        capital,
-        flag_url,
-        created_at
-      FROM countries
-      ORDER BY region ASC, name ASC`
-    );
+    const { data, error } = await supabase
+      .from('countries')
+      .select('*')
+      .order('country_name', { ascending: true });
 
-    res.status(200).json({
-      success: true,
-      count: result.rows.length,
-      data: result.rows,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error fetching countries:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch countries',
-      message: error.message,
-      timestamp: new Date().toISOString()
-    });
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-};
+});
 
-module.exports = {
-  getCountries
-};
+// GET /api/v1/countries/:code — single country by ISO code
+router.get('/:code', async (req, res) => {
+  try {
+    const code = req.params.code.toUpperCase();
+
+    const { data, error } = await supabase
+      .from('countries')
+      .select('*')
+      .eq('country_code', code)
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Country not found' });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;

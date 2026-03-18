@@ -1,205 +1,82 @@
 # Know Before You Go
 
-A simple, publicly accessible web platform that gives African travelers instant travel 
-information for any African country. Select a destination and immediately see visa 
-requirements, health documentation, dos and don'ts, general entry requirements, and 
-emergency contacts — all on one page. No login required.
+A simple, public travel information platform for African destinations. Travelers can quickly check visa requirements, health advisories, cultural dos and don'ts, and emergency contacts for each country.
 
----
+**What is in this repo**
+- `frontend/` contains two static web apps: the public traveler site and the admin dashboard.
+- `backend/` is a Node.js + Express API that serves data and handles admin operations.
+- `database/` holds SQL migrations and seed data for Supabase (PostgreSQL).
 
-## Team Members
+**Requirements**
+- Node.js `>= 18` (for the backend).
+- A Supabase project (PostgreSQL) with access to the SQL editor.
 
-| Name | Role |
-|------|------|
-| James Giir Deng | Literature Review |
-| Andrew Thon Riem Alier | Documentation and Ethics Lead |
-| Nitonde Binthia | Project Manager |
-| ISHIMWE Jonathan | System Architecture |
-| David Mugisha | Frontend Development |
-| KABANDA Gislain | Database and ERD |
+**Quick Start (Local)**
+1. Backend setup: `cd backend`, then `npm install`, then copy env file `cp .env.example .env`.
+2. Update values in `.env`: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`, `JWT_SECRET`, and `ALLOWED_ORIGINS`.
+3. Database setup (Supabase SQL editor): run `database/migrations/001_create_tables.sql`, then `database/migrations/002_add_feedback.sql`, then `database/seeds/seed_data.sql`.
+4. Start the API: `npm run dev` (development) or `npm start` (production).
+5. Frontend setup (static): update `API_BASE` in `frontend/user/js/config.js` and `ADMIN_API` in `frontend/admin/js/admin.js`.
+6. Open the apps: `frontend/user/index.html` and `frontend/admin/index.html`.
 
----
+If you use a local static server (recommended), make sure its URL is included in `ALLOWED_ORIGINS` in `.env`.
 
-## Tech Stack
+**Start the System (Local)**
+1. Start the backend API from `backend/`: `npm run dev`.
+2. Start a static server for the frontend (or open the HTML files directly).
+3. Open the public app: `frontend/user/index.html`.
+4. Open the admin app: `frontend/admin/index.html`.
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React.js |
-| Backend | Node.js + Express.js |
-| Database | PostgreSQL |
-| HTTP Requests | Axios |
-| API Testing | Postman |
-| Version Control | GitHub |
+**Backend Overview**
+- Framework: Express
+- Security: `helmet`, CORS allow-list, and global rate limiting
+- Auth: JWT for admin routes
+- Database client: Supabase JS SDK
+- Health check: `GET /health`
 
----
+**Frontend Overview**
+- Two independent static apps:
+- User app: country grid and details
+- Admin app: login, subscribers, feedback, and countries
+- Configuration files: `frontend/user/js/config.js` and `frontend/admin/js/admin.js`
 
-## Project Structure
-```
-know-before-you-go/
-│
-├── frontend/                        # React.js application (David)
-│   └── src/
-│       ├── pages/
-│       │   ├── Home.js              # Country selector page
-│       │   ├── CountryInfo.js       # All 5 info sections for selected country
-│       │   └── Newsletter.js        # Optional email subscription page
-│       ├── components/
-│       │   └── Navbar/
-│       │       └── Navbar.js
-│       └── utils/
-│           └── api.js               # All API calls centralised here
-│
-├── backend/                         # Node.js + Express API (Gislain)
-│   ├── server.js
-│   ├── config/
-│   │   └── db.js                    # PostgreSQL connection
-│   └── routes/
-│       ├── countries.js
-│       ├── visa.js
-│       ├── health.js
-│       ├── dosDonts.js
-│       ├── general.js
-│       ├── emergency.js
-│       └── newsletter.js
-│
-├── database/                        # SQL files (Gislain)
-│   ├── migrations/
-│   │   └── 001_create_tables.sql
-│   └── seeds/
-│       └── seed_data.sql
-│
-├── docs/                            # Architecture diagrams and ERD (Jonathan)
-├── .gitignore
-└── README.md
-```
+**Database Overview**
+The SQL migrations create the core tables, including:
+- `countries`
+- `visa_requirements`
+- `health_advisories`
+- `cultural_guidelines`
+- `emergency_contacts`
+- `newsletter_subscribers`
+- `admin_users`
+- `feedback` (added in migration 002)
 
----
+**Key API Endpoints**
+Public endpoints:
+- `GET /api/v1/countries`
+- `GET /api/v1/countries/:code`
+- `GET /api/v1/visa/:code`
+- `GET /api/v1/health/:code`
+- `GET /api/v1/emergency/:code`
+- `GET /api/v1/dosDonts/:code`
+- `GET /api/v1/general/:code`
+- `POST /api/v1/newsletter`
+- `POST /api/v1/feedback`
 
-## Getting Started
+Admin endpoints (JWT):
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/admin/subscribers`
+- `GET /api/v1/admin/feedback`
+- `GET /api/v1/users`
 
-### Prerequisites
-- Node.js v18 or higher
-- PostgreSQL v14 or higher
-- npm
+**Docs**
+Architecture diagrams and ERD are in `docs/System_Architecture Drawings/`.
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/YOUR_USERNAME/know-before-you-go.git
-cd know-before-you-go
-```
-
-### 2. Set up the database
-```bash
-psql -U postgres -c "CREATE DATABASE know_before_you_go;"
-psql -U postgres -d know_before_you_go -f database/migrations/001_create_tables.sql
-psql -U postgres -d know_before_you_go -f database/seeds/seed_data.sql
-```
-
-### 3. Set up the backend
-```bash
-cd backend
-npm install
-cp .env.example .env
-```
-Open the `.env` file and fill in your PostgreSQL credentials:
-```
-PORT=5000
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=know_before_you_go
-DB_USER=postgres
-DB_PASSWORD=your_password_here
-```
-Then start the server:
-```bash
-npm run dev
-```
-The API will be running at `http://localhost:5000`
-
-### 4. Set up the frontend
-```bash
-cd frontend
-npm install
-npm start
-```
-The app will open at `http://localhost:3000`
-
----
-
-## API Endpoints
-
-All endpoints are publicly accessible. No authentication required.
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/countries` | Get all available countries for the dropdown |
-| GET | `/api/visa?country=KE` | Get visa requirements for a country |
-| GET | `/api/health?country=KE` | Get health documentation requirements |
-| GET | `/api/dos-donts?country=KE` | Get dos and don'ts for a country |
-| GET | `/api/general?country=KE` | Get general entry requirements |
-| GET | `/api/emergency?country=KE` | Get embassy and emergency contacts |
-| POST | `/api/newsletter/subscribe` | Subscribe to newsletter (name + email only) |
-
-Replace `KE` with any supported country code. Supported codes: `RW`, `KE`, `TZ`, `UG`, `NG`, `GH`, `ZA`, `MA`, `ET`, `SN`
-
----
-
-## Branching Strategy
-
-| Branch | Purpose |
-|--------|---------|
-| `main` | Stable, reviewed code only — do not push directly |
-| `dev` | Active development — all members merge into this branch |
-| `feature/your-feature-name` | Your individual work branch |
-
-### How to contribute
-
-Always start from the latest `dev` branch:
-```bash
-git checkout dev
-git pull origin dev
-git checkout -b feature/your-feature-name
-```
-Do your work, then:
-```bash
-git add .
-git commit -m "feat: describe what you did"
-git push origin feature/your-feature-name
-```
-Then open a Pull Request into `dev` on GitHub. Do not merge your own pull request — ask a teammate to review it first.
-
-### Commit message format
-```
-feat: add country info page
-fix: correct visa query for Morocco
-docs: update README with API endpoints
-style: clean up navbar styling
-test: add unit test for newsletter form
-```
-
----
-
-## Supported Countries
-
-| Code | Country | Region |
-|------|---------|--------|
-| RW | Rwanda | East Africa |
-| KE | Kenya | East Africa |
-| TZ | Tanzania | East Africa |
-| UG | Uganda | East Africa |
-| NG | Nigeria | West Africa |
-| GH | Ghana | West Africa |
-| ZA | South Africa | Southern Africa |
-| MA | Morocco | North Africa |
-| ET | Ethiopia | East Africa |
-| SN | Senegal | West Africa |
-
----
-
-## Project Board
-Trello: https://trello.com/invite/b/69abf4a89c321d16bc725124/ATTI5cbbb4d94e0812ad6a7575f39f027bbcC88DAA46/know-before-you-go-project-board
-
----
-
-## License
-Academic project — not for commercial use.
+**Team**
+- James Giir Deng — Literature Review
+- Andrew Thon Riem Alier — Documentation and Ethics Lead
+- Nitonde Binthia — Project Manager
+- ISHIMWE Jonathan — System Architecture & API Endpoints Testing
+- David Mugisha — Frontend Development
+- KABANDA Gislain — Database and ERD

@@ -1,100 +1,26 @@
-/**
- * Dos and Don'ts API Endpoint
- * GET /api/dos-donts/:country_code
- * 
- * Returns cultural guidance and local laws for a specific country
- * Country code validation is handled by middleware (validateCountryCodeParam)
- */
+'use strict';
 
-const { query } = require('../config/database');
+const express  = require('express');
+const router   = express.Router();
+const supabase = require('../config/db');
 
-/**
- * GET /api/dos-donts/:country_code
- * Fetch dos and don'ts for a country
- * 
- * Parameters:
- * - country_code: ISO 3166-1 alpha-3 code (e.g., RWA, KEN, TZA)
- *   Validated and sanitized by validateCountryCodeParam middleware
- * 
- * Response:
- * {
- *   success: true,
- *   country_code: "RWA",
- *   country_name: "Rwanda",
- *   do_count: 3,
- *   dont_count: 3,
- *   data: {
- *     do: [...],
- *     dont: [...]
- *   }
- * }
- */
-const getDosAndDonts = async (req, res) => {
+// GET /api/v1/dosDonts/:code
+router.get('/:code', async (req, res) => {
   try {
-    const country_code = req.params.country_code;  // Already validated by middleware
+    const code = req.params.code.toUpperCase();
 
-    // Verify country exists
-    const countryResult = await query(
-      'SELECT country_code, name FROM countries WHERE country_code = $1',
-      [country_code]
-    );
+    const { data, error } = await supabase
+      .from('cultural_guidelines')
+      .select('*')
+      .eq('country_code', code)
+      .single();
 
-    if (countryResult.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Country not found',
-        country_code: country_code,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    const countryName = countryResult.rows[0].name;
-
-    // Fetch "do" items
-    const doResult = await query(
-      `SELECT 
-        id,
-        description
-      FROM dos_and_donts
-      WHERE country_code = $1 AND type = 'do'
-      ORDER BY id ASC`,
-      [country_code]
-    );
-
-    // Fetch "don't" items
-    const dontResult = await query(
-      `SELECT 
-        id,
-        description
-      FROM dos_and_donts
-      WHERE country_code = $1 AND type = 'dont'
-      ORDER BY id ASC`,
-      [country_code]
-    );
-
-    res.status(200).json({
-      success: true,
-      country_code: country_code,
-      country_name: countryName,
-      do_count: doResult.rows.length,
-      dont_count: dontResult.rows.length,
-      data: {
-        do: doResult.rows,
-        dont: dontResult.rows
-      },
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error fetching dos and donts:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch dos and donts',
-      message: error.message,
-      timestamp: new Date().toISOString()
-    });
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Cultural guidelines not found' });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-};
+});
 
-module.exports = {
-  getDosAndDonts
-};
+module.exports = router;

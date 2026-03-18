@@ -1,150 +1,69 @@
-/**
- * Know Before You Go Backend API
- * Express.js server for African travel information platform
- * 
- * Endpoints:
- * - GET /api/countries
- * - GET /api/visa/:country_code
- * - GET /api/health/:country_code
- * - GET /api/dos-donts/:country_code
- * - GET /api/general/:country_code
- * - GET /api/emergency/:country_code
- * - POST /api/newsletter/subscribe
- */
+'use strict';
 
+const express    = require('express');
+const cors       = require('cors');
+const helmet     = require('helmet');
+const rateLimit  = require('express-rate-limit');
 require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-
-// Import middleware
-const { 
-  validateCountryCodeParam, 
-  validateNewsletterBody 
-} = require('./middleware/validation');
-const { 
-  asyncHandler, 
-  errorHandler, 
-  notFoundHandler,
-  requestLogger 
-} = require('./middleware/errorHandler');
-
-// Import route handlers
-const { getCountries } = require('./routes/countries');
-const { getVisaRequirements } = require('./routes/visa');
-const { getHealthRequirements } = require('./routes/health');
-const { getDosAndDonts } = require('./routes/dosDonts');
-const { getGeneralRequirements } = require('./routes/general');
-const { getEmergencyContacts } = require('./routes/emergency');
-const { subscribeNewsletter } = require('./routes/newsletter');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// ============================================
-// MIDDLEWARE
-// ============================================
-
-// Request logging middleware
-app.use(requestLogger);
-
-// Security headers
+/* ── SECURITY ── */
 app.use(helmet());
+app.use(express.json());
 
-// CORS configuration (allow frontend to make requests)
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
+// CORS — allow configured origins
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',');
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
-// Body parser middleware
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ limit: '10kb', extended: true }));
+// Global rate limiter
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
 
-// ============================================
-// HEALTH CHECK ENDPOINT
-// ============================================
+/* ── ROUTES ── */
+app.use('/api/v1/countries',  require('./routes/countries'));
+app.use('/api/v1/visa',       require('./routes/visa'));
+app.use('/api/v1/health',     require('./routes/health'));
+app.use('/api/v1/dosDonts',   require('./routes/dosDonts'));
+app.use('/api/v1/general',    require('./routes/general'));
+app.use('/api/v1/emergency',  require('./routes/emergency'));
+app.use('/api/v1/newsletter', require('./routes/newsletter'));
+app.use('/api/v1/feedback',   require('./routes/feedback'));
+app.use('/api/v1/auth',       require('./routes/auth'));
+app.use('/api/v1/users',      require('./routes/users'));
+app.use('/api/v1/admin',      require('./routes/admin'));
+
+/* ── HEALTH CHECK ── */
 app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ============================================
-// API ROUTES (Implemented with Validation - Phase 4)
-// ============================================
+/* ── 404 ── */
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
 
-// Countries endpoint
-app.get('/api/countries', asyncHandler(getCountries));
+/* ── ERROR HANDLER ── */
+app.use((err, req, res, next) => {
+  console.error('[KBYG Error]', err.message);
+  const status = err.status || err.statusCode || 500;
+  res.status(status).json({ error: err.message || 'Internal server error' });
+});
 
-// Visa requirements endpoint (with country code validation)
-app.get('/api/visa/:country_code', validateCountryCodeParam, asyncHandler(getVisaRequirements));
-
-// Health requirements endpoint (with country code validation)
-app.get('/api/health/:country_code', validateCountryCodeParam, asyncHandler(getHealthRequirements));
-
-// Dos and Don'ts endpoint (with country code validation)
-app.get('/api/dos-donts/:country_code', validateCountryCodeParam, asyncHandler(getDosAndDonts));
-
-// General requirements endpoint (with country code validation)
-app.get('/api/general/:country_code', validateCountryCodeParam, asyncHandler(getGeneralRequirements));
-
-// Emergency contacts endpoint (with country code validation)
-app.get('/api/emergency/:country_code', validateCountryCodeParam, asyncHandler(getEmergencyContacts));
-
-// Newsletter subscription endpoint (with body validation)
-app.post('/api/newsletter/subscribe', validateNewsletterBody, asyncHandler(subscribeNewsletter));
-
-// ============================================
-// 404 NOT FOUND & ERROR HANDLING (Phase 4)
-// ============================================
-
-// 404 handler (must be after all routes)
-app.use(notFoundHandler);
-
-// Global error handler (must be last)
-app.use(errorHandler);
-
-// ============================================
-// SERVER STARTUP
-// ============================================
+/* ── START ── */
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`
-  ║   Know Before You Go Backend API                          ║
-  ║   Server running on http://localhost:${PORT}                  ║
-  ║   Environment: ${process.env.NODE_ENV || 'development'}                        ║
-  ║   Health Check: http://localhost:${PORT}/health             ║
-  ║                                                            ║
-  ║   API Endpoints (Phase 4 - SECURED):                      ║
-  ║   - GET  /api/countries                                   ║
-  ║   - GET  /api/visa/:country_code (validated)              ║
-  ║   - GET  /api/health/:country_code (validated)            ║
-  ║   - GET  /api/dos-donts/:country_code (validated)         ║
-  ║   - GET  /api/general/:country_code (validated)           ║
-  ║   - GET  /api/emergency/:country_code (validated)         ║
-  ║   - POST /api/newsletter/subscribe (validated)            ║
-  ║                                                            ║
-  ║   Security Features:                                      ║
-  ║   ✓ Parameterized SQL queries                             ║
-  ║   ✓ Input validation & sanitization                       ║
-  ║   ✓ Helmet.js security headers                            ║
-  ║   ✓ CORS protection                                       ║
-  ║   ✓ Global error handler                                  ║
-  ║   ✓ Environment-aware error messages                      ║
-  ║   ✓ Request logging                                       ║
-  `);
+  console.log(`[KBYG] Server running on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
 });
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
-  process.exit(0);
-});
-
-module.exports = app;

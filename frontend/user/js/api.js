@@ -1,37 +1,24 @@
-const API_BASE = 'http://localhost:5000';
+/**
+ * api.js
+ * Thin HTTP wrapper used by app.js.
+ * All fetch calls go through here so error handling
+ * and base URL are managed in one place.
+ *
+ * Requires: config.js (loaded before this file)
+ */
 
-const API = {
+async function api(path, opts = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...opts.headers,
+  };
 
-    async getCountries() {
-        const res = await fetch(`${API_BASE}/api/countries`);
-        if (!res.ok) throw { status: res.status };
-        return res.json();
-    },
+  const res  = await fetch(API_BASE + path, { ...opts, headers });
+  const body = await res.json().catch(() => ({}));
 
-    async getCountryData(code) {
-        const [visa, health, dosDonts, general, emergency] = await Promise.all([
-            fetch(`${API_BASE}/api/visa/${code}`),
-            fetch(`${API_BASE}/api/health/${code}`),
-            fetch(`${API_BASE}/api/dos-donts/${code}`),
-            fetch(`${API_BASE}/api/general/${code}`),
-            fetch(`${API_BASE}/api/emergency/${code}`),
-        ]);
-        for (const r of [visa, health, dosDonts, general, emergency]) {
-            if (!r.ok) throw { status: r.status };
-        }
-        const [visaData, healthData, dosDontsData, generalData, emergencyData] = await Promise.all([
-            visa.json(), health.json(), dosDonts.json(), general.json(), emergency.json(),
-        ]);
-        return { visa: visaData, health: healthData, dosDonts: dosDontsData, general: generalData, emergency: emergencyData };
-    },
+  if (!res.ok) {
+    throw new Error(body.message || body.error || `HTTP ${res.status}`);
+  }
 
-    async subscribeNewsletter(name, email) {
-        const res = await fetch(`${API_BASE}/api/newsletter/subscribe`, {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ name, email }),
-        });
-        if (!res.ok) throw { status: res.status };
-        return res.json();
-    },
-};
+  return body;
+}
