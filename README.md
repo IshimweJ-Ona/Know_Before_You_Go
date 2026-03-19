@@ -65,10 +65,19 @@ AI_CACHE_TTL_SECONDS=21600
 ```
 
 ## Database Setup (Local)
+
+### Create Database and User 
+To run these comands in MYSQL shell(as root):
+```bash
+CREATE DATABASE IF NOT EXISTS ai_db;
+CREATE USER IF NOT EXISTS 'kbyg_user'@'localhost' IDENTIFIED BY 'kbyg_password';
+GRANT ALL PRIVILEGES ON ai_db.* TO 'kbyg_user'@'localhost';
+FLUSH PRIVILEGES;
+```
 Option 1: MySQL client
 ```bash
 mysql -u root -p < backend/data/schema.sql
-mysql -u root -p < backend/data/seed.sql
+mysql -u kbyg_user -p ai_db < backend/data/seed.sql
 ```
 
 Option 2: Run in your MySQL UI using:
