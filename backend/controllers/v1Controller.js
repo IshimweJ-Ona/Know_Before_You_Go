@@ -91,41 +91,15 @@ const fetchCountryByCode = async (code) => {
 
 const ASSISTANT_CACHE_TTL_SECONDS = 10 * 60;
 const BUNDLE_CACHE_TTL_SECONDS = 10 * 60;
-const assistantMemoryCache = new Map();
-const bundleMemoryCache = new Map();
+import { createMemoryCache } from "../utils/memoryCache.js";
 
-const getAssistantMemoryCache = (key) => {
-    const hit = assistantMemoryCache.get(key);
-    if (!hit) return null;
-    if (Date.now() > hit.expiresAt) {
-        assistantMemoryCache.delete(key);
-        return null;
-    }
-    return hit.value;
-};
+const assistantCache = createMemoryCache(ASSISTANT_CACHE_TTL_SECONDS);
+const bundleCache = createMemoryCache(BUNDLE_CACHE_TTL_SECONDS);
 
-const setAssistantMemoryCache = (key, value, ttlSeconds) => {
-    assistantMemoryCache.set(key, { value, expiresAt: Date.now() + ttlSeconds * 1000 });
-};
-
-const getBundleMemoryCache = (key) => {
-    const hit = bundleMemoryCache.get(key);
-    if (!hit) return null;
-    if (Date.now() > hit.expiresAt) {
-        bundleMemoryCache.delete(key);
-        return null;
-    }
-    return hit.value;
-};
-
-const setBundleMemoryCache = (key, value, ttlSeconds) => {
-    bundleMemoryCache.set(key, { value, expiresAt: Date.now() + ttlSeconds * 1000 });
-};
-
-const getAssistantCache = (key) => getAssistantMemoryCache(key);
-const setAssistantCache = (key, value) => setAssistantMemoryCache(key, value, ASSISTANT_CACHE_TTL_SECONDS);
-const getBundleCache = (key) => getBundleMemoryCache(key);
-const setBundleCache = (key, value) => setBundleMemoryCache(key, value, BUNDLE_CACHE_TTL_SECONDS);
+const getAssistantCache = (key) => assistantCache.get(key);
+const setAssistantCache = (key, value) => assistantCache.set(key, value);
+const getBundleCache = (key) => bundleCache.get(key);
+const setBundleCache = (key, value) => bundleCache.set(key, value);
 
 const fetchCountryBundle = async (code) => {
     const country = await fetchCountryByCode(code);
@@ -320,10 +294,16 @@ export const getCountryAssistant = async (req, res) => {
                 aiText = await generateAnswer({
                     intent: "country_profile",
                     data: bundle,
-                    question: `Provide a concise, well-structured travel overview for ${bundle.country.country_name}.`,
+                    question: `Provide a concise, well-structured travel overview for ${bundle.country.country_name}. Focus on visas, health, safety, emergency services, and cultural norms.`,
+                    countryName: bundle.country.country_name,
                 });
             }
         } catch (aiError) {
+            console.error("AI generation failed (country assistant):", {
+                message: aiError?.message || aiError,
+                intent: "country_profile",
+                country: bundle.country?.country_name,
+            });
             aiText = "";
         }
 
@@ -336,15 +316,20 @@ export const getCountryAssistant = async (req, res) => {
 };
 
 export const createNewsletter = async (req, res) => {
-    const { email, name } = req.body || {};
+    const { email, name, password } = req.body || {};
     if (!email) return res.status(400).json({ message: "Email is required." });
+    if (!password) return res.status(400).json({ message: "Password is required." });
     try {
+        const hashedPassword = await bcrypt.hash(password, 10);
         await pool.query(
-            "INSERT IGNORE INTO users (email, full_name, role, source) VALUES (?, ?, 'subscriber', ?)",
-            [email.trim().toLowerCase(), name || null, "frontend"]
+            "INSERT IGNORE INTO users (email, full_name, role, password_hash, source) VALUES (?, ?, 'subscriber', ?, ?)",
+            [email.trim().toLowerCase(), name || null, hashedPassword, "frontend"]
         );
         res.status(200).json({ success: true });
     } catch (error) {
+        if (error?.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({ message: "Email already subscribed." });
+        }
         res.status(500).json({ message: "Failed to subscribe." });
     }
 };
@@ -557,16 +542,22 @@ export const loginSubscriber = async (req, res) => {
 export const getNews = async (req, res) => {
     try {
         const { country, category } = req.query;
-        let query = "SELECT id, title, content, country_code, category, published_at FROM news WHERE is_active = 1 ORDER BY published_at DESC";
+        let query =
+            "SELECT id, title, content, country_code, category, published_at FROM news WHERE is_active = 1";
         const params = [];
+
         if (country) {
             query += " AND country_code = ?";
             params.push(country.toUpperCase());
         }
+
         if (category) {
             query += " AND category = ?";
             params.push(category);
         }
+
+        query += " ORDER BY published_at DESC";
+
         const [rows] = await pool.query(query, params);
         // If no news in DB, fetch from external sources for countries
         if (rows.length === 0) {
@@ -614,12 +605,21 @@ export const aiChat = async (req, res) => {
         return res.status(400).json({ message: "Message is required." });
     }
     try {
-        // Restrict to country info
-        const systemPrompt = "You are a helpful AI assistant that provides information only about countries, travel, visas, health, culture, and related topics. Do not answer questions about other topics. If asked about something else, politely redirect to country-related information.";
         const userPrompt = history ? `${history}\nUser: ${message}` : `User: ${message}`;
-        const response = await generateAnswer({ intent: 'general_guide', data: {}, question: userPrompt, systemPrompt });
-        res.status(200).json({ response: response.answer });
+
+        const response = await generateAnswer({
+            intent: "general_guide",
+            data: {},
+            question: userPrompt,
+        });
+
+        const text = typeof response === "string" ? response : response?.answer || "";
+        res.status(200).json({ response: text });
     } catch (error) {
+        console.error("aiChat error:", {
+            message: error?.message || error,
+            query: String(message).slice(0, 160),
+        });
         res.status(500).json({ message: "Failed to process chat." });
     }
 };

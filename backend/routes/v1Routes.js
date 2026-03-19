@@ -20,7 +20,7 @@ import {
     aiChat,
     deleteSubscriber,
 } from "../controllers/v1Controller.js";
-import { requireAdmin } from "../middleware/auth.js";
+import { requireAdmin, requireSubscriber } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -47,6 +47,9 @@ router.post("/subscriber/login", loginSubscriber);
 // News and Ads
 router.get("/news", getNews);
 router.get("/ads", getAds);
+
+// AI Chat
+router.post("/chat", requireSubscriber, aiChat);
 
 // AI Chat
 router.post("/chat", aiChat);

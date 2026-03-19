@@ -1,4 +1,5 @@
 import pool from "../config/db.js";
+import { createMemoryCache } from "../utils/memoryCache.js";
 
 const getCountryByName = async (name) => {
     const [rows] = await pool.query(
@@ -137,43 +138,28 @@ export const fetchVisaInfo = async ({ countryName }) => {
 };
 
 const CACHE_TTL_SECONDS = 5 * 60;
-
-const memoryCache = new Map();
-
-const getMemoryCache = (key) => {
-    const hit = memoryCache.get(key);
-    if (!hit) return null;
-    if (Date.now() > hit.expiresAt) {
-        memoryCache.delete(key);
-        return null;
-    }
-    return hit.value;
-};
-
-const setMemoryCache = (key, value, ttlSeconds) => {
-    memoryCache.set(key, { value, expiresAt: Date.now() + ttlSeconds * 1000 });
-};
+const cache = createMemoryCache(CACHE_TTL_SECONDS);
 
 export const fetchCountryProfileCached = async (countryName) => {
     const key = `profile:${countryName.toLowerCase()}`;
-    const memoryHit = getMemoryCache(key);
+    const memoryHit = cache.get(key);
     if (memoryHit) return memoryHit;
 
     const data = await fetchCountryProfile(countryName);
     if (data) {
-        setMemoryCache(key, data, CACHE_TTL_SECONDS);
+        cache.set(key, data);
     }
     return data;
 };
 
 export const fetchVisaInfoCached = async ({ countryName }) => {
     const key = `visa:${countryName.toLowerCase()}`;
-    const memoryHit = getMemoryCache(key);
+    const memoryHit = cache.get(key);
     if (memoryHit) return memoryHit;
 
     const data = await fetchVisaInfo({ countryName });
     if (data) {
-        setMemoryCache(key, data, CACHE_TTL_SECONDS);
+        cache.set(key, data);
     }
     return data;
 };

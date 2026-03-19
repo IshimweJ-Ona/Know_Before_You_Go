@@ -186,10 +186,11 @@ CREATE TABLE IF NOT EXISTS news (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (country_code) REFERENCES countries(country_code) ON DELETE SET NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE INDEX idx_news_country ON news(country_code);
 CREATE INDEX idx_news_category ON news(category);
+CREATE INDEX idx_news_active_published ON news(is_active, published_at);
 
 -- Advertisements table
 CREATE TABLE IF NOT EXISTS advertisements (
@@ -204,6 +205,7 @@ CREATE TABLE IF NOT EXISTS advertisements (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (target_country) REFERENCES countries(country_code) ON DELETE SET NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE INDEX idx_ads_country ON advertisements(target_country);
+CREATE INDEX idx_ads_active_created ON advertisements(is_active, created_at);
