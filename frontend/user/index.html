@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Know Before You Go — visa rules, health advisories, cultural guidelines and emergency contacts for African destinations.">
+  <title>Know Before You Go</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+  <!-- PAGE LOADER -->
+  <div id="loader">
+    <div class="ld-logo">KBYG</div>
+    <div class="ld-track"><div class="ld-bar" id="ld-bar"></div></div>
+    <div class="ld-txt" id="ld-txt">Loading destinations</div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast"></div>
+
+  <!-- NEWSLETTER MODAL -->
+  <div id="nl-overlay" onclick="closeNL(event)">
+    <div id="nl-modal">
+      <button class="nl-close" onclick="closeNLBtn()" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="nl-label">Stay informed</div>
+      <div class="nl-title">Travel Updates<br>Direct to You</div>
+      <p class="nl-sub">Get the latest travel advisories, visa changes, and health alerts for your destinations — before you go.</p>
+      <div class="nl-error" id="nl-modal-err"></div>
+      <div class="nl-success" id="nl-modal-ok">You are now subscribed. Safe travels.</div>
+      <div id="nl-modal-form">
+        <div class="f-group">
+          <label class="f-label" for="nl-name">Full name</label>
+          <input type="text" class="f-input" id="nl-name" placeholder="Your name" autocomplete="name">
+        </div>
+        <div class="f-group">
+          <label class="f-label" for="nl-email">Email address</label>
+          <input type="email" class="f-input" id="nl-email" placeholder="traveller@example.com" autocomplete="email">
+        </div>
+        <button class="btn-primary" id="nl-btn" onclick="submitNewsletter()">Subscribe</button>
+        <p class="nl-disclaimer">No spam. Unsubscribe at any time.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN MODAL -->
+  <div id="login-overlay" onclick="closeLogin(event)">
+    <div id="login-modal">
+      <button class="nl-close" onclick="closeLoginBtn()" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="nl-label">Subscriber Access</div>
+      <div class="nl-title">Login to Your Account</div>
+      <div class="nl-error" id="login-err"></div>
+      <div class="nl-success" id="login-ok">Login successful!</div>
+      <div id="login-form">
+        <div class="f-group">
+          <label class="f-label" for="login-email">Email address</label>
+          <input type="email" class="f-input" id="login-email" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="f-group">
+          <label class="f-label" for="login-password">Password</label>
+          <input type="password" class="f-input" id="login-password" placeholder="Password" autocomplete="current-password">
+        </div>
+        <button class="btn-primary" id="login-btn" onclick="submitLogin()">Login</button>
+        <p class="nl-disclaimer">Don't have an account? <a href="#" onclick="switchToSignup()">Sign up</a></p>
+      </div>
+      <div id="signup-form" style="display:none;">
+        <div class="f-group">
+          <label class="f-label" for="signup-name">Full name</label>
+          <input type="text" class="f-input" id="signup-name" placeholder="Your name" autocomplete="name">
+        </div>
+        <div class="f-group">
+          <label class="f-label" for="signup-email">Email address</label>
+          <input type="email" class="f-input" id="signup-email" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="f-group">
+          <label class="f-label" for="signup-password">Password</label>
+          <input type="password" class="f-input" id="signup-password" placeholder="Password" autocomplete="new-password">
+        </div>
+        <button class="btn-primary" id="signup-btn" onclick="submitSignup()">Sign Up</button>
+        <p class="nl-disclaimer">Already have an account? <a href="#" onclick="switchToLogin()">Login</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT MODAL -->
+  <div id="chat-overlay" onclick="closeChat(event)">
+    <div id="chat-modal">
+      <button class="nl-close" onclick="closeChatBtn()" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="nl-label">AI Chat</div>
+      <div class="nl-title">Ask About Countries</div>
+      <div id="chat-messages"></div>
+      <div class="chat-input-group">
+        <input type="text" class="f-input" id="chat-input" placeholder="Ask about visas, travel tips..." onkeypress="handleChatKey(event)">
+        <button class="btn-primary" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app" style="display:none;">
+
+    <!-- DARK HEADER -->
+    <nav id="nav">
+      <div class="nav-logo">KBYG</div>
+      <div class="nav-right">
+        <button class="nav-btn" id="login-btn" onclick="openLogin()">Login</button>
+        <button class="nav-btn" id="chat-btn" onclick="openChat()" style="display:none;">AI Chat</button>
+        <button class="nav-nl-btn" onclick="openNL()">Subscribe to updates</button>
+      </div>
+    </nav>
+
+    <!-- HOME VIEW -->
+    <div id="home">
+
+      <!-- DARK HERO (part of header zone) -->
+      <section id="hero">
+        <div class="hero-glow"></div>
+        <div class="hero-kicker">Travel smart, travel safe</div>
+        <h1 class="hero-h1">KNOW <em>BEFORE</em><br>YOU GO</h1>
+        <p class="hero-sub">Everything you need before you land — visa rules, cultural guidelines, health alerts, and emergency contacts in one place.</p>
+        <div class="search-row">
+          <div class="search-wrap">
+            <input type="text" class="search-input" id="search"
+              placeholder="Search a destination..." oninput="filterCountries()" autocomplete="off">
+            <button class="search-btn" aria-label="Search">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+            </button>
+          </div>
+          <div class="filter-wrap">
+            <div class="chip-group" data-group="visa">
+              <button class="chip on" onclick="setChip(this)" data-value="all">All visas</button>
+              <button class="chip" onclick="setChip(this)" data-value="free">Visa free</button>
+            </div>
+            <div class="chip-group" data-group="region">
+              <button class="chip on" onclick="setChip(this)" data-value="all">All regions</button>
+              <button class="chip" onclick="setChip(this)" data-value="east">East Africa</button>
+              <button class="chip" onclick="setChip(this)" data-value="west">West Africa</button>
+              <button class="chip" onclick="setChip(this)" data-value="north">North Africa</button>
+              <button class="chip" onclick="setChip(this)" data-value="southern">Southern Africa</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- WHITE BODY -->
+      <div class="section-bar">
+        <span class="sb-label">Africa &mdash; 10 Destinations</span>
+        <span class="sb-count" id="count-lbl">Loading...</span>
+      </div>
+
+      <div id="grid"></div>
+
+      <!-- NEWS SECTION -->
+      <section id="news-section">
+        <div class="section-bar">
+          <span class="sb-label">Latest Travel News</span>
+        </div>
+        <div id="news-list"></div>
+      </section>
+
+      <!-- ADS SECTION -->
+      <section id="ads-section">
+        <div class="section-bar">
+          <span class="sb-label">Sponsored</span>
+        </div>
+        <div id="ads-list"></div>
+      </section>
+
+      <!-- NEWSLETTER SECTION -->
+      <section id="nl-section">
+        <div class="nl-sec-kicker">Stay ahead of the curve</div>
+        <h2 class="nl-sec-title">Never Get Caught Off Guard</h2>
+        <p class="nl-sec-sub">Subscribe for travel advisories, visa rule changes, and health alerts — delivered straight to your inbox.</p>
+        <div class="nl-inline-form">
+          <input type="email" class="f-input" id="nl-inline-email" placeholder="your@email.com" autocomplete="email">
+          <button class="btn-inline" id="nl-inline-btn" onclick="submitInlineNewsletter()">Subscribe</button>
+        </div>
+        <div id="nl-inline-msg"></div>
+      </section>
+
+      <!-- DARK FOOTER -->
+      <footer>
+        <div class="footer-logo">KBYG</div>
+        <div class="footer-copy">Travel Information Platform &nbsp;&mdash;&nbsp; Data from official government sources</div>
+        <button class="nav-nl-btn" style="margin-top:14px;" onclick="switchToAdmin()">Switch to admin</button>
+      </footer>
+
+    </div><!-- /home -->
+
+    <!-- COUNTRY DETAIL VIEW -->
+    <div id="detail">
+
+      <div class="d-hero">
+        <img id="d-img" src="" alt="" class="d-hero-img">
+        <div class="d-hero-fade"></div>
+        <button class="d-back" onclick="goBack()">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Back
+        </button>
+        <div class="d-hero-body">
+          <div id="d-flag" class="d-flag"></div>
+          <h1 id="d-name" class="d-hname"></h1>
+          <div id="d-reg"  class="d-region"></div>
+          <div id="d-adv"  class="d-adv"></div>
+        </div>
+      </div>
+
+      <div id="tabs">
+        <button class="tab on" onclick="switchTab('overview')">Overview</button>
+        <button class="tab"    onclick="switchTab('places')">Must Visit</button>
+        <button class="tab"    onclick="switchTab('rules')">Dos &amp; Don'ts</button>
+        <button class="tab"    onclick="switchTab('visa')">Visa</button>
+        <button class="tab"    onclick="switchTab('health')">Health</button>
+        <button class="tab"    onclick="switchTab('emergency')">Emergency</button>
+      </div>
+
+      <div class="content">
+
+        <div class="panel on" id="p-overview">
+          <div class="s-head"><h2>Quick Info</h2><p id="d-desc"></p></div>
+          <div class="i-grid" id="d-tiles"></div>
+          <div class="s-rule"></div>
+          <div class="s-head"><h2>Transportation &amp; Housing</h2><p>How to get around and where to stay.</p></div>
+          <div class="th-grid" id="d-th"></div>
+          <div class="s-rule"></div>
+          <div class="s-head"><h2>Highlights</h2><p>A snapshot of places worth seeing.</p></div>
+          <div class="pstrip" id="d-strip"></div>
+          <div class="s-rule"></div>
+          <div class="s-head"><h2>AI Summary</h2><p>Generated overview from the travel assistant.</p></div>
+          <div id="d-ai" class="prose">Loading summary...</div>
+          <button class="btn-primary" style="margin-top:12px;" onclick="requestMoreInfo()">More info</button>
+        </div>
+
+        <div class="panel" id="p-places">
+          <div class="s-head"><h2>Must-Visit Destinations</h2><p>Top places you should not miss on this trip.</p></div>
+          <div class="p-grid" id="d-places"></div>
+        </div>
+
+        <div class="panel" id="p-rules">
+          <div class="s-head"><h2>Dos &amp; Don'ts</h2><p>Cultural norms and practices that matter on the ground.</p></div>
+          <div class="dd-cols" id="d-dd"></div>
+          <div class="s-rule"></div>
+          <div class="s-head"><h2>Legal Warnings</h2><p>Laws that could cause serious problems for travellers.</p></div>
+          <div id="d-legal"></div>
+        </div>
+
+        <div class="panel" id="p-visa">
+          <div class="s-head"><h2>Visa Requirements</h2><p>Entry requirements vary by nationality. Always confirm with the official embassy.</p></div>
+          <div id="d-visa"></div>
+        </div>
+
+        <div class="panel" id="p-health">
+          <div class="s-head"><h2>Health Advisories</h2><p>Vaccine requirements, recommended vaccinations, and active health risks.</p></div>
+          <div id="d-health"></div>
+        </div>
+
+        <div class="panel" id="p-emergency">
+          <div class="s-head"><h2>Emergency Contacts</h2><p>Save these numbers before you land. Click any tile to copy.</p></div>
+          <div class="em-grid" id="d-em"></div>
+        </div>
+
+      </div><!-- /content -->
+
+      <!-- Detail footer -->
+      <footer>
+        <div class="footer-logo">KBYG</div>
+        <div class="footer-copy">Always verify information with official sources before travel</div>
+        <button class="nav-nl-btn" style="margin-top:14px;" onclick="switchToAdmin()">Switch to admin</button>
+      </footer>
+
+    </div><!-- /detail -->
+
+  </div><!-- /app -->
+
+  <!-- FLOATING BACK BUTTON -->
+  <button id="float-btn" onclick="goBack()">
+    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Back to countries
+  </button>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html> 
