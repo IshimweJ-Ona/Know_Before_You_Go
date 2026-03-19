@@ -59,6 +59,16 @@ const adminLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+// Disable caching for API responses
+app.use("/api/", (req, res, next) => {
+    res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+    });
+    next();
+});
+
 app.use("/api/ai", aiLimiter, aiRoutes);
 app.use("/api/countries", countryRoutes);
 app.use("/api/v1/admin", adminLimiter);

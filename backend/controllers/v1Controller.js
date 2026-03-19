@@ -238,8 +238,11 @@ export const listCountries = async (_req, res) => {
              FROM countries c
              ORDER BY c.country_name`
         );
-        res.status(200).json(rows.map((row) => normalizeRow(row, COUNTRY_LIST_COLUMNS)));
+        const normalized = rows.map((row) => normalizeRow(row, COUNTRY_LIST_COLUMNS));
+        console.log('[listCountries] Fetched', normalized.length, 'countries');
+        res.status(200).json(normalized);
     } catch (error) {
+        console.error('[listCountries] Error:', error.message);
         res.status(500).json({ message: "Failed to load countries." });
     }
 };
@@ -557,6 +560,7 @@ export const getNews = async (req, res) => {
         const [rows] = await pool.query(query, params);
         res.status(200).json({ news: rows });
     } catch (error) {
+        console.error("getNews error:", error);
         res.status(500).json({ message: "Failed to fetch news." });
     }
 };
@@ -575,6 +579,7 @@ export const getAds = async (req, res) => {
         const [rows] = await pool.query(query, params);
         res.status(200).json({ ads: rows });
     } catch (error) {
+        console.error("getAds error:", error);
         res.status(500).json({ message: "Failed to fetch ads." });
     }
 };

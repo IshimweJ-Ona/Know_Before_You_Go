@@ -108,20 +108,52 @@ function renderAiSummary(text, country) {
 window.addEventListener('DOMContentLoaded', async () => {
   setLoader(20, 'Connecting to server');
   try {
-    setLoader(50, 'Loading destinations');
-    const res = await api(EP.COUNTRIES);
-    ALL = Array.isArray(res) ? res : (res.countries || res.data || []);
-    setLoader(100, 'Ready');
-    setTimeout(() => {
-      hideLoader(); showApp();
-      renderSkeletons(10);
-      setTimeout(() => {
-        renderCountries(ALL);
-        setTxt('count-lbl', `${ALL.length} destination${ALL.length !== 1 ? 's' : ''}`);
-      }, 120);
-    }, 280);
+    setLoader(40, 'Loading data');
+    const [countriesRes, newsRes, adsRes] = await Promise.all([
+      api(EP.COUNTRIES),
+      api(EP.NEWS),
+      api(EP.ADS)
+    ]);
+    console.log('[KBYG] API Responses:', {countriesRes, newsRes, adsRes});
+    ALL = Array.isArray(countriesRes) ? countriesRes : (countriesRes.countries || countriesRes.data || []);
+    console.log('[KBYG] Parsed destinations count:', ALL.length);
+    if (!ALL || !ALL.length) {
+      console.error('[KBYG] No destinations loaded from API');
+      throw new Error('No destinations returned from API');
+    }
+    
+    // Load news and ads into their elements
+    const news = newsRes.news || [];
+    const newsHtml = news.map(n => `
+      <div class="news-item">
+        <h3>${escapeHtml(n.title)}</h3>
+        <p>${escapeHtml(n.content)}</p>
+        <small>${new Date(n.published_at).toLocaleDateString()}</small>
+      </div>
+    `).join('') || '<p>No news available.</p>';
+    setEl('news-list', newsHtml);
+    
+    const ads = adsRes.ads || [];
+    const adsHtml = ads.map(a => `
+      <div class="ad-item">
+        <img src="${escapeHtml(a.image_url || '')}" alt="${escapeHtml(a.title)}" style="max-width:100px;">
+        <h4>${escapeHtml(a.title)}</h4>
+        <p>${escapeHtml(a.description || '')}</p>
+        <a href="${escapeHtml(a.link_url || '#')}">Learn more</a>
+      </div>
+    `).join('') || '<p>No ads available.</p>';
+    setEl('ads-list', adsHtml);
+    
+    setLoader(80, 'Rendering destinations');
+    hideLoader();
+    showApp();
+    renderCountries(ALL);
+    setTxt('count-lbl', `${ALL.length} destination${ALL.length !== 1 ? 's' : ''}`);
+    console.log('[KBYG] All data loaded and rendered successfully');
+    
   } catch (err) {
-    console.error('[KBYG] Boot error:', err.message);
+    console.error('[KBYG] Boot error:', err);
+    console.error('[KBYG] Error message:', err.message);
     setLoader(100, 'Error loading');
     setTimeout(() => {
       hideLoader(); showApp(); renderError();
@@ -213,9 +245,26 @@ function renderError() {
     Could not load destinations. Please check your connection and try again.
   </p>`);
 }
+function renderNoResults() {
+  setEl('grid',`<p style="padding:60px 0;color:#a0a0b0;font-size:1.05rem;grid-column:1/-1;text-align:center;">
+    No destinations match your search criteria. Try adjusting your filters.
+  </p>`);
+}
 function renderCountries(list) {
-  if (!list||!list.length){ renderError(); return; }
-  setEl('grid', list.map((c,i)=>{
+  console.log('[renderCountries] Called with list:', list);
+  console.log('[renderCountries] List length:', list ? list.length : 'undefined');
+  
+  if (!list||!list.length){ 
+    console.error('[renderCountries] List is empty, rendering no results');
+    console.trace('Trace for empty list:');
+    renderNoResults(); 
+    return; 
+  }
+  
+  const gridEl = document.getElementById('grid');
+  console.log('[renderCountries] Grid element exists:', !!gridEl);
+  
+  const html = list.map((c,i)=>{
     const code = c.country_code||c.code||'';
     const name = c.country_name||c.name||'';
     // Use unique image per country — prefer DB value, fall back to country-specific default
@@ -243,7 +292,11 @@ function renderCountries(list) {
           </div>
         </div>
       </div>`;
-  }).join(''));
+  }).join('');
+  
+  console.log('[renderCountries] Generated HTML length:', html.length);
+  setEl('grid', html);
+  console.log('[renderCountries] Destinations rendered successfully');
 }
 function getChipValue(group) {
   return (document.querySelector(`.chip-group[data-group="${group}"] .chip.on`)?.dataset.value || 'all').toLowerCase();
@@ -261,6 +314,7 @@ function filterCountries(q) {
   const query = (typeof q === 'string' ? q : (document.getElementById('search')?.value || '')).toLowerCase();
   const visaFilter = getChipValue('visa');
   const regionFilter = getChipValue('region');
+  console.log('[FILTER] Query:', query, 'Visa filter:', visaFilter, 'Region filter:', regionFilter);
   const visible = ALL.filter((c) => {
     const name = (c.country_name || c.name || '').toLowerCase();
     const region = (c.region || '').toLowerCase();
@@ -272,7 +326,12 @@ function filterCountries(q) {
     if (regionFilter !== 'all' && !region.includes(regionFilter)) return false;
     return true;
   });
-  renderCountries(visible);
+  console.log('[FILTER] Visible count:', visible.length);
+  if (visible.length === 0) {
+    renderNoResults();
+  } else {
+    renderCountries(visible);
+  }
   setTxt('count-lbl',`${visible.length} destination${visible.length!==1?'s':''}`);
 }
 
@@ -724,7 +783,7 @@ async function init() {
   setLoader(20, 'Loading destinations...');
   try {
     const res = await api(EP.COUNTRIES);
-    ALL = res.countries || [];
+    ALL = Array.isArray(res) ? res : (res.countries || res.data || []);
     setLoader(60, 'Rendering countries...');
     renderCountries(ALL);
     setLoader(80, 'Loading news and ads...');
