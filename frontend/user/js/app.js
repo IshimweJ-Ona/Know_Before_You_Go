@@ -147,6 +147,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     setLoader(80, 'Rendering destinations');
     hideLoader();
     showApp();
+    updateLoginUI();
     renderCountries(ALL);
     setTxt('count-lbl', `${ALL.length} destination${ALL.length !== 1 ? 's' : ''}`);
     console.log('[KBYG] All data loaded and rendered successfully');
@@ -163,7 +164,16 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 /* ── NEWSLETTER ── */
-function openNL()    { document.getElementById('nl-overlay').classList.add('open'); }
+function openNL() {
+  document.getElementById('nl-overlay').classList.add('open');
+  if (USER_TOKEN) {
+    loadNews();
+    document.getElementById('subscriber-news').style.display = 'block';
+  } else {
+    setEl('subscriber-news', '<p>To get news about travels to countries, subscribe to our newsletter.</p>');
+    document.getElementById('subscriber-news').style.display = 'block';
+  }
+}
 function closeNLBtn(){ document.getElementById('nl-overlay').classList.remove('open'); }
 function closeNL(e)  { if (e.target === document.getElementById('nl-overlay')) closeNLBtn(); }
 
@@ -341,6 +351,7 @@ async function openCountry(code) {
   document.getElementById('detail').style.display    = 'block';
   document.getElementById('float-btn').style.display = 'flex';
   window.scrollTo(0,0);
+  window.currentCountry = code;
   switchTab('overview');
 
   setTxt('d-name','Loading');
@@ -357,6 +368,7 @@ async function openCountry(code) {
     const d  = data.guidelines||{};
     const ai = data.aiText    || '';
     buildHero(c, code);
+    updateChatHeader(c);
     buildOverview(c);
     buildPlaces(c);
     buildRules(d,c);
@@ -598,6 +610,8 @@ async function requestMoreInfo(){
 
 /* ── NEW FEATURES ── */
 let USER_TOKEN = localStorage.getItem('user_token');
+let ADMIN_TOKEN = null;
+let chatHistory = [];
 
 function updateLoginUI() {
   const loginBtn = document.getElementById('login-btn');
@@ -714,8 +728,111 @@ function closeChat(event) {
   }
 }
 
-function closeChatBtn() {
-  document.getElementById('chat-overlay').style.display = 'none';
+function openAdminLogin() {
+  document.getElementById('admin-login-overlay').style.display = 'flex';
+}
+
+function closeAdminLogin(event) {
+  if (event.target.id === 'admin-login-overlay') {
+    document.getElementById('admin-login-overlay').style.display = 'none';
+  }
+}
+
+function closeAdminLoginBtn() {
+  document.getElementById('admin-login-overlay').style.display = 'none';
+}
+
+async function submitAdminLogin() {
+  const email = document.getElementById('admin-email').value.trim();
+  const password = document.getElementById('admin-password').value;
+  if (!email || !password) {
+    setEl('admin-login-err', 'Please fill all fields.');
+    document.getElementById('admin-login-err').style.display = 'block';
+    return;
+  }
+  try {
+    const res = await api(EP.ADMIN_LOGIN, {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    ADMIN_TOKEN = res.token;
+    closeAdminLoginBtn();
+    loadAdmin();
+  } catch (err) {
+    setEl('admin-login-err', err.message || 'Login failed.');
+    document.getElementById('admin-login-err').style.display = 'block';
+  }
+}
+
+async function loadAdmin() {
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('detail').style.display = 'none';
+  document.getElementById('admin').style.display = 'block';
+  try {
+    const res = await api(EP.ADMIN_SUBSCRIBERS, {
+      headers: { 'Authorization': `Bearer ${ADMIN_TOKEN}` },
+    });
+    const subscribers = res.subscribers || [];
+    const html = subscribers.map(s => `
+      <div style="background: var(--card-bg); padding: 16px; margin-bottom: 12px; border-radius: var(--r);">
+        <p><strong>Name:</strong> ${escapeHtml(s.name)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(s.email)}</p>
+        <p><strong>Status:</strong> ${s.status}</p>
+        <p><strong>Created:</strong> ${new Date(s.created_at).toLocaleDateString()}</p>
+        <button onclick="deleteSubscriber(${s.id})">Delete</button>
+      </div>
+    `).join('');
+    setEl('subscribers-list', html || '<p>No subscribers.</p>');
+  } catch (err) {
+    setEl('subscribers-list', '<p>Failed to load subscribers.</p>');
+  }
+}
+
+async function deleteSubscriber(id) {
+  try {
+    await api(`/api/v1/admin/subscribers/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${ADMIN_TOKEN}` },
+    });
+    loadAdmin(); // reload list
+  } catch (err) {
+    alert('Failed to delete subscriber.');
+  }
+}
+
+function logoutAdmin() {
+  ADMIN_TOKEN = null;
+  document.getElementById('admin').style.display = 'none';
+  document.getElementById('home').style.display = 'block';
+}
+
+// Keyboard shortcut for admin access
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+    e.preventDefault();
+    openAdminLogin();
+  }
+});
+
+function updateLoginUI() {
+  const loginBtn = document.getElementById('login-btn');
+  const chatBtn = document.getElementById('chat-btn');
+  if (USER_TOKEN) {
+    loginBtn.textContent = 'Logout';
+    loginBtn.onclick = logoutUser;
+    chatBtn.style.display = 'inline-block';
+  } else {
+    loginBtn.textContent = 'Login';
+    loginBtn.onclick = openLogin;
+    chatBtn.style.display = 'none';
+  }
+}
+
+function logoutUser() {
+  USER_TOKEN = null;
+  localStorage.removeItem('user_token');
+  updateLoginUI();
+  toast('Logged out successfully.');
 }
 
 async function sendChat() {
@@ -726,12 +843,23 @@ async function sendChat() {
   const messagesDiv = document.getElementById('chat-messages');
   messagesDiv.innerHTML += `<div class="chat-user">${escapeHtml(message)}</div>`;
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  
+  // Add to history
+  chatHistory.push({ role: 'user', content: message });
+  
   try {
+    // Build history string
+    const historyStr = chatHistory.slice(0, -1).map(h => `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.content}`).join('\n');
+    
     const res = await api(EP.CHAT, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${USER_TOKEN}` },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, history: historyStr }),
     });
+    
+    // Add AI response to history
+    chatHistory.push({ role: 'assistant', content: res.response });
+    
     messagesDiv.innerHTML += `<div class="chat-ai">${escapeHtml(res.response)}</div>`;
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   } catch (err) {
@@ -741,6 +869,48 @@ async function sendChat() {
 
 function handleChatKey(event) {
   if (event.key === 'Enter') sendChat();
+}
+
+function updateChatHeader(c) {
+  const name = c.country_name || c.name || 'this country';
+  setTxt('chat-title', `AI Travel Assistant for ${name}`);
+  setTxt('chat-subtitle', `Ask me anything about ${name} - visas, health, transport, places to visit, and more!`);
+  setTxt('chat-welcome', `Hello! I am your traveler assistant. I can provide information about visas, health requirements, transportation, popular places to visit, and more for ${name}. What would you like to know?`);
+}
+
+async function sendCountryChat() {
+  const input = document.getElementById('chat-input');
+  const message = input.value.trim();
+  if (!message) return;
+  input.value = '';
+  const messagesDiv = document.getElementById('chat-messages');
+  messagesDiv.innerHTML += `<div class="chat-message user">
+    <div class="chat-avatar">👤</div>
+    <div class="chat-bubble">${escapeHtml(message)}</div>
+  </div>`;
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  try {
+    const query = `${window.currentCountry ? `About ${window.currentCountry}: ` : ''}${message}`;
+    const res = await api(EP.AI_QUERY, {
+      method: 'POST',
+      body: JSON.stringify({ query }),
+    });
+    const answer = res.answer || res.response || 'No response';
+    messagesDiv.innerHTML += `<div class="chat-message ai">
+      <div class="chat-avatar">🤖</div>
+      <div class="chat-bubble">${answer.replace(/\n/g, '<br>')}</div>
+    </div>`;
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  } catch (err) {
+    messagesDiv.innerHTML += `<div class="chat-message ai">
+      <div class="chat-avatar">🤖</div>
+      <div class="chat-bubble">Sorry, I couldn't process your question. Please try again.</div>
+    </div>`;
+  }
+}
+
+function handleCountryChatKey(event) {
+  if (event.key === 'Enter') sendCountryChat();
 }
 
 async function loadNews() {

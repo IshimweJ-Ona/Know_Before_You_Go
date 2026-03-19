@@ -85,8 +85,15 @@
         <button class="btn-primary" id="signup-btn" onclick="submitSignup()">Sign Up</button>
         <p class="nl-disclaimer">Already have an account? <a href="#" onclick="switchToLogin()">Login</a></p>
       </div>
+      <div id="subscriber-news" style="display:none;">
+        <h3>Latest News</h3>
+        <div id="news-list"></div>
+      </div>
     </div>
   </div>
+
+  <!-- ADMIN LOGIN MODAL -->
+  
 
   <!-- CHAT MODAL -->
   <div id="chat-overlay" onclick="closeChat(event)">
@@ -113,7 +120,7 @@
       <div class="nav-right">
         <button class="nav-btn" id="login-btn" onclick="openLogin()">Login</button>
         <button class="nav-btn" id="chat-btn" onclick="openChat()" style="display:none;">AI Chat</button>
-        <button class="nav-nl-btn" onclick="openNL()">Subscribe to updates</button>
+        <button class="nav-nl-btn" onclick="openNL()">Subscribe to News</button>
       </div>
     </nav>
 
@@ -190,7 +197,6 @@
       <footer>
         <div class="footer-logo">KBYG</div>
         <div class="footer-copy">Travel Information Platform &nbsp;&mdash;&nbsp; Data from official government sources</div>
-        <button class="nav-nl-btn" style="margin-top:14px;" onclick="switchToAdmin()">Switch to admin</button>
       </footer>
 
     </div><!-- /home -->
@@ -267,16 +273,46 @@
           <div class="em-grid" id="d-em"></div>
         </div>
 
+        <div class="panel" id="p-chat">
+          <div class="s-head"><h2 id="chat-title">AI Travel Assistant</h2><p id="chat-subtitle">Ask me anything about this country - visas, health, transport, places to visit, and more!</p></div>
+          <div id="chat-container">
+            <div id="chat-messages">
+              <div class="chat-message ai">
+                <div class="chat-avatar">🤖</div>
+                <div class="chat-bubble" id="chat-welcome">Hello! I am your traveler assistant. I can provide information about visas, health requirements, transportation, popular places to visit, and more. What would you like to know?</div>
+              </div>
+            </div>
+            <div id="chat-input-area">
+              <input type="text" id="chat-input" placeholder="Ask about visas, health, transport..." autocomplete="off" onkeypress="handleCountryChatKey(event)">
+              <button id="chat-send" onclick="sendCountryChat()">Send</button>
+            </div>
+          </div>
+        </div>
+
       </div><!-- /content -->
 
       <!-- Detail footer -->
       <footer>
         <div class="footer-logo">KBYG</div>
         <div class="footer-copy">Always verify information with official sources before travel</div>
-        <button class="nav-nl-btn" style="margin-top:14px;" onclick="switchToAdmin()">Switch to admin</button>
       </footer>
 
     </div><!-- /detail -->
+
+    <!-- ADMIN VIEW -->
+    <div id="admin" style="display:none;">
+      <nav id="nav">
+        <div class="nav-logo">KBYG Admin</div>
+        <div class="nav-right">
+          <button class="nav-btn" onclick="logoutAdmin()">Logout</button>
+        </div>
+      </nav>
+      <div style="padding:48px;">
+        <h1>Admin Panel</h1>
+        <h2>Subscribers</h2>
+        <div id="subscribers-list"></div>
+      </div>
+    </div>
 
   </div><!-- /app -->
 

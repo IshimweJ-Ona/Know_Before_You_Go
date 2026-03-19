@@ -30,4 +30,6 @@ const EP = {
   NEWS: '/api/v1/news',
   ADS: '/api/v1/ads',
   CHAT: '/api/v1/chat',
+  ADMIN_LOGIN: '/api/v1/admin/login',
+  ADMIN_SUBSCRIBERS: '/api/v1/admin/subscribers',
 };
