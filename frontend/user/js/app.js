@@ -5,6 +5,7 @@
 'use strict';
 
 let ALL = [];
+let CURRENT_USER = null;
 
 /* ── Unique fallback hero images per country code ── */
 const COUNTRY_IMAGES = {
@@ -46,18 +47,25 @@ const IC = {
 function setEl(id, html)  { const e = document.getElementById(id); if (e) e.innerHTML  = html; }
 function setTxt(id, text) { const e = document.getElementById(id); if (e) e.textContent = text; }
 function setLoader(pct, text) {
-  document.getElementById('ld-bar').style.width = `${pct}%`;
-  document.getElementById('ld-txt').textContent  = text;
+  const bar = document.getElementById('ld-bar');
+  const label = document.getElementById('ld-txt');
+  if (bar) bar.style.width = `${pct}%`;
+  if (label) label.textContent  = text;
 }
 function hideLoader() {
   const el = document.getElementById('loader');
+  if (!el) return;
   el.style.opacity = '0';
   setTimeout(() => { el.style.display = 'none'; }, 440);
 }
-function showApp() { document.getElementById('app').style.display = 'block'; }
+function showApp() {
+  const app = document.getElementById('app');
+  if (app) app.style.display = 'block';
+}
 
 function toast(msg, type = 'ok') {
   const el = document.getElementById('toast');
+  if (!el) return;
   el.textContent = msg;
   el.className   = `show ${type}`;
   clearTimeout(el._t);
@@ -71,6 +79,14 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+// Basic URL sanitizer for images/links so assets stay path-safe
+function safeUrl(value) {
+  const url = String(value || '').trim();
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  return '';
 }
 
 function renderAiSummary(text, country) {
@@ -104,65 +120,6 @@ function renderAiSummary(text, country) {
   `);
 }
 
-/* ── BOOT ── */
-window.addEventListener('DOMContentLoaded', async () => {
-  setLoader(20, 'Connecting to server');
-  try {
-    setLoader(40, 'Loading data');
-    const [countriesRes, newsRes, adsRes] = await Promise.all([
-      api(EP.COUNTRIES),
-      api(EP.NEWS),
-      api(EP.ADS)
-    ]);
-    console.log('[KBYG] API Responses:', {countriesRes, newsRes, adsRes});
-    ALL = Array.isArray(countriesRes) ? countriesRes : (countriesRes.countries || countriesRes.data || []);
-    console.log('[KBYG] Parsed destinations count:', ALL.length);
-    if (!ALL || !ALL.length) {
-      console.error('[KBYG] No destinations loaded from API');
-      throw new Error('No destinations returned from API');
-    }
-    
-    // Load news and ads into their elements
-    const news = newsRes.news || [];
-    const newsHtml = news.map(n => `
-      <div class="news-item">
-        <h3>${escapeHtml(n.title)}</h3>
-        <p>${escapeHtml(n.content)}</p>
-        <small>${new Date(n.published_at).toLocaleDateString()}</small>
-      </div>
-    `).join('') || '<p>No news available.</p>';
-    setEl('news-list', newsHtml);
-    
-    const ads = adsRes.ads || [];
-    const adsHtml = ads.map(a => `
-      <div class="ad-item">
-        <img src="${escapeHtml(a.image_url || '')}" alt="${escapeHtml(a.title)}" style="max-width:100px;">
-        <h4>${escapeHtml(a.title)}</h4>
-        <p>${escapeHtml(a.description || '')}</p>
-        <a href="${escapeHtml(a.link_url || '#')}">Learn more</a>
-      </div>
-    `).join('') || '<p>No ads available.</p>';
-    setEl('ads-list', adsHtml);
-    
-    setLoader(80, 'Rendering destinations');
-    hideLoader();
-    showApp();
-    updateLoginUI();
-    renderCountries(ALL);
-    setTxt('count-lbl', `${ALL.length} destination${ALL.length !== 1 ? 's' : ''}`);
-    console.log('[KBYG] All data loaded and rendered successfully');
-    
-  } catch (err) {
-    console.error('[KBYG] Boot error:', err);
-    console.error('[KBYG] Error message:', err.message);
-    setLoader(100, 'Error loading');
-    setTimeout(() => {
-      hideLoader(); showApp(); renderError();
-      setTxt('count-lbl', 'Unavailable');
-    }, 600);
-  }
-});
-
 /* ── NEWSLETTER ── */
 function openNL() {
   document.getElementById('nl-overlay').classList.add('open');
@@ -178,18 +135,34 @@ function closeNLBtn(){ document.getElementById('nl-overlay').classList.remove('o
 function closeNL(e)  { if (e.target === document.getElementById('nl-overlay')) closeNLBtn(); }
 
 async function submitNewsletter() {
-  const name  = document.getElementById('nl-name').value.trim();
-  const email = document.getElementById('nl-email').value.trim();
-  const errEl = document.getElementById('nl-modal-err');
+  const name     = document.getElementById('nl-name').value.trim();
+  const email    = document.getElementById('nl-email').value.trim();
+  const password = document.getElementById('nl-password').value.trim();
+  const errEl    = document.getElementById('nl-modal-err');
   errEl.style.display = 'none';
   if (!email) { errEl.textContent = 'Please enter your email address.'; errEl.style.display = 'block'; return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; return; }
+  if (!password) { errEl.textContent = 'Please enter a password.'; errEl.style.display = 'block'; return; }
   const btn = document.getElementById('nl-btn');
   btn.disabled = true; btn.classList.add('loading'); btn.textContent = 'Subscribing';
   try {
-    await api(EP.NEWSLETTER, { method: 'POST', body: JSON.stringify({ name, email }) });
+    await api(EP.NEWSLETTER, { method: 'POST', body: JSON.stringify({ name, email, password }) });
+    // Auto-login after newsletter subscription
+    const loginRes = await api(EP.SUBSCRIBER_LOGIN, {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    USER_TOKEN = loginRes.token;
+    CURRENT_USER = { email, name };
+    localStorage.setItem('user_token', USER_TOKEN);
+    localStorage.setItem('user_info', JSON.stringify(CURRENT_USER));
+    updateLoginUI();
     document.getElementById('nl-modal-form').style.display = 'none';
     document.getElementById('nl-modal-ok').style.display   = 'block';
+    setTimeout(() => {
+      document.getElementById('nl-overlay').classList.remove('open');
+      location.reload();
+    }, 1500);
   } catch (err) {
     errEl.textContent = err.message || 'Something went wrong. Please try again.';
     errEl.style.display = 'block';
@@ -278,7 +251,8 @@ function renderCountries(list) {
     const code = c.country_code||c.code||'';
     const name = c.country_name||c.name||'';
     // Use unique image per country — prefer DB value, fall back to country-specific default
-    const img  = c.hero_image||c.heroImg||COUNTRY_IMAGES[code]||COUNTRY_IMAGES.KE;
+    const rawImg  = c.hero_image||c.heroImg||COUNTRY_IMAGES[code]||COUNTRY_IMAGES.KE;
+    const img = safeUrl(rawImg) || COUNTRY_IMAGES.KE;
     const lvl  = c.advisory_level||c.advisory||1;
     const vs   = c.visa_status||c.visaStatus||'';
     const hlvl = c.cdc_notice_level||0;
@@ -286,7 +260,7 @@ function renderCountries(list) {
     return `
       <div class="c-card" onclick="openCountry('${code}')" style="animation-delay:${i*0.06}s">
         <div class="c-img">
-          <img src="${img}" alt="${name}" loading="lazy"
+          <img src="${img}" alt="${escapeHtml(name)}" loading="lazy"
             onerror="this.src='${COUNTRY_IMAGES.KE}'">
           <div class="c-img-fade"></div>
           <div class="c-flag">${c.flag||''}</div>
@@ -386,8 +360,10 @@ async function openCountry(code) {
 
 /* ── BUILD FUNCTIONS ── */
 function buildHero(c, code) {
-  const img = c.hero_image||c.heroImg||COUNTRY_IMAGES[code]||COUNTRY_IMAGES.KE;
-  document.getElementById('d-img').src = img;
+  const rawImg = c.hero_image||c.heroImg||COUNTRY_IMAGES[code]||COUNTRY_IMAGES.KE;
+  const img = safeUrl(rawImg) || COUNTRY_IMAGES.KE;
+  const imgEl = document.getElementById('d-img');
+  if (imgEl) imgEl.src = img;
   setTxt('d-flag', c.flag||'');
   setTxt('d-name',(c.country_name||c.name||'').toUpperCase());
   setTxt('d-reg', c.region||'');
@@ -424,7 +400,7 @@ function buildOverview(c) {
   ].join(''));
   const places = c.places||[];
   setEl('d-strip', places.map(p=>
-    `<div class="ps-it"><img src="${p.image||p.img||''}" alt="${p.name||''}" loading="lazy"></div>`
+    `<div class="ps-it"><img src="${safeUrl(p.image||p.img||'')}" alt="${escapeHtml(p.name||'')}" loading="lazy"></div>`
   ).join('')||`<p style="color:#a0a0b0;font-size:1rem;">No highlights available.</p>`);
   setEl('d-ai','Loading summary...');
 }
@@ -434,7 +410,7 @@ function buildPlaces(c) {
   setEl('d-places', places.length
     ? places.map(p=>`
         <div class="p-card">
-          <img src="${p.image||p.img||''}" alt="${p.name||''}" loading="lazy">
+          <img src="${safeUrl(p.image||p.img||'')}" alt="${escapeHtml(p.name||'')}" loading="lazy">
           <div class="p-fade"></div>
           <div class="p-lbl">
             <div class="p-name">${p.name||''}</div>
@@ -571,9 +547,13 @@ function switchToAdmin(){
 /* ── UTILITIES ── */
 function copyNum(num,lbl){
   if(num==='—') return;
-  navigator.clipboard.writeText(num)
-    .then(()=>toast(`${lbl} number copied: ${num}`))
-    .catch(()=>toast(`${lbl}: ${num}`));
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(num)
+      .then(()=>toast(`${lbl} number copied: ${num}`))
+      .catch(()=>toast(`${lbl}: ${num}`));
+  } else {
+    toast(`${lbl}: ${num}`);
+  }
 } 
 
 
@@ -582,7 +562,7 @@ async function loadAiSummary(c){
     const name = c.country_name || c.name || 'this destination';
     const res = await api(EP.AI_QUERY, {
       method: 'POST',
-      body: JSON.stringify({ query: `Travel information for ${name}` }),
+      body: JSON.stringify({ query: `Give a structured travel overview for ${name}: 3 key safety points, 3 health considerations, 3 cultural tips, and 3 must‑see places.` }),
     });
     const textOut = res.aiText || '';
     renderAiSummary(textOut, c);
@@ -599,7 +579,7 @@ async function requestMoreInfo(){
     setEl('d-ai', 'Loading more info...');
     const res = await api(EP.AI_QUERY, {
       method: 'POST',
-      body: JSON.stringify({ query: `More info about ${name}` }),
+      body: JSON.stringify({ query: `More advanced travel guidance for ${name}: deeper detail on political stability (neutral and factual only), emergency services, and local laws travellers commonly misunderstand.` }),
     });
     const textOut = res.aiText || '';
     renderAiSummary(textOut, c);
@@ -613,29 +593,20 @@ let USER_TOKEN = localStorage.getItem('user_token');
 let ADMIN_TOKEN = null;
 let chatHistory = [];
 
-function updateLoginUI() {
-  const loginBtn = document.getElementById('login-btn');
-  const chatBtn = document.getElementById('chat-btn');
-  if (USER_TOKEN) {
-    loginBtn.textContent = 'Logout';
-    loginBtn.onclick = logout;
-    chatBtn.style.display = 'inline-block';
-  } else {
-    loginBtn.textContent = 'Login';
-    loginBtn.onclick = openLogin;
-    chatBtn.style.display = 'none';
+// Load user info from localStorage on page load
+if (USER_TOKEN) {
+  const userInfo = localStorage.getItem('user_info');
+  if (userInfo) {
+    try {
+      CURRENT_USER = JSON.parse(userInfo);
+    } catch (e) {
+      console.error('Failed to parse user info');
+    }
   }
 }
 
-function logout() {
-  localStorage.removeItem('user_token');
-  USER_TOKEN = null;
-  updateLoginUI();
-  toast('Logged out successfully.');
-}
-
 function openLogin() {
-  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('login-overlay').classList.add('open');
   document.getElementById('login-form').style.display = 'block';
   document.getElementById('signup-form').style.display = 'none';
   document.getElementById('login-err').style.display = 'none';
@@ -644,12 +615,12 @@ function openLogin() {
 
 function closeLogin(event) {
   if (event.target.id === 'login-overlay') {
-    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('login-overlay').classList.remove('open');
   }
 }
 
 function closeLoginBtn() {
-  document.getElementById('login-overlay').style.display = 'none';
+  document.getElementById('login-overlay').classList.remove('open');
 }
 
 function switchToSignup() {
@@ -680,10 +651,13 @@ async function submitLogin() {
       body: JSON.stringify({ email, password }),
     });
     USER_TOKEN = res.token;
+    CURRENT_USER = { email, name: res.full_name || email.split('@')[0] };
     localStorage.setItem('user_token', USER_TOKEN);
+    localStorage.setItem('user_info', JSON.stringify(CURRENT_USER));
     updateLoginUI();
-    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('login-overlay').classList.remove('open');
     toast('Login successful!');
+    setTimeout(() => location.reload(), 1500);
   } catch (err) {
     setEl('login-err', err.message || 'Login failed.');
     document.getElementById('login-err').style.display = 'block';
@@ -704,9 +678,22 @@ async function submitSignup() {
       method: 'POST',
       body: JSON.stringify({ full_name: name, email, password }),
     });
-    setEl('login-ok', 'Account created! Please login.');
+    // Auto-login after signup
+    const loginRes = await api(EP.SUBSCRIBER_LOGIN, {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    USER_TOKEN = loginRes.token;
+    CURRENT_USER = { email, name };
+    localStorage.setItem('user_token', USER_TOKEN);
+    localStorage.setItem('user_info', JSON.stringify(CURRENT_USER));
+    setEl('login-ok', 'Account created and logged in!');
     document.getElementById('login-ok').style.display = 'block';
-    switchToLogin();
+    updateLoginUI();
+    setTimeout(() => {
+      document.getElementById('login-overlay').classList.remove('open');
+      location.reload();
+    }, 1500);
   } catch (err) {
     setEl('login-err', err.message || 'Signup failed.');
     document.getElementById('login-err').style.display = 'block';
@@ -714,17 +701,18 @@ async function submitSignup() {
 }
 
 function openChat() {
-  if (!USER_TOKEN) {
-    toast('Please login to use AI chat.', 'err');
-    return;
-  }
-  document.getElementById('chat-overlay').style.display = 'flex';
+  document.getElementById('chat-overlay').classList.add('open');
   document.getElementById('chat-messages').innerHTML = '';
+}
+
+function closeChatBtn() {
+  const overlay = document.getElementById('chat-overlay');
+  if (overlay) overlay.classList.remove('open');
 }
 
 function closeChat(event) {
   if (event.target.id === 'chat-overlay') {
-    document.getElementById('chat-overlay').style.display = 'none';
+    document.getElementById('chat-overlay').classList.remove('open');
   }
 }
 
@@ -817,58 +805,138 @@ document.addEventListener('keydown', (e) => {
 function updateLoginUI() {
   const loginBtn = document.getElementById('login-btn');
   const chatBtn = document.getElementById('chat-btn');
-  if (USER_TOKEN) {
-    loginBtn.textContent = 'Logout';
-    loginBtn.onclick = logoutUser;
+  const newsSection = document.getElementById('news-section');
+  const userProfile = document.getElementById('user-profile');
+  if (USER_TOKEN && CURRENT_USER) {
+    loginBtn.style.display = 'none';
     chatBtn.style.display = 'inline-block';
+    userProfile.style.display = 'block';
+    const initials = (CURRENT_USER.name || 'U').split(' ').map(n => n[0]).join('').toUpperCase();
+    document.getElementById('user-initials').textContent = initials.slice(0, 2);
+    document.getElementById('user-menu-name').textContent = CURRENT_USER.name || CURRENT_USER.email;
+    if (newsSection) newsSection.style.display = 'block';
   } else {
+    loginBtn.style.display = 'inline-block';
     loginBtn.textContent = 'Login';
     loginBtn.onclick = openLogin;
     chatBtn.style.display = 'none';
+    userProfile.style.display = 'none';
+    if (newsSection) newsSection.style.display = 'none';
   }
 }
 
+function toggleUserMenu() {
+  const menu = document.getElementById('user-menu');
+  if (menu) {
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+// Close menu when clicking outside
+document.addEventListener('click', (e) => {
+  const userProfile = document.getElementById('user-profile');
+  const userMenu = document.getElementById('user-menu');
+  if (userProfile && userMenu && !userProfile.contains(e.target)) {
+    userMenu.style.display = 'none';
+  }
+});
+
 function logoutUser() {
   USER_TOKEN = null;
+  CURRENT_USER = null;
   localStorage.removeItem('user_token');
+  localStorage.removeItem('user_info');
   updateLoginUI();
   toast('Logged out successfully.');
+  const userMenu = document.getElementById('user-menu');
+  if (userMenu) userMenu.style.display = 'none';
 }
 
 async function sendChat() {
+  if (!USER_TOKEN) {
+    const messagesDiv = document.getElementById('chat-messages');
+    messagesDiv.innerHTML += `<div class="chat-message ai-message">
+      <div class="chat-avatar">🤖</div>
+      <div class="chat-bubble">Please log in to use the AI chat feature.</div>
+    </div>`;
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    return;
+  }
   const input = document.getElementById('chat-input');
   const message = input.value.trim();
   if (!message) return;
   input.value = '';
+
   const messagesDiv = document.getElementById('chat-messages');
-  messagesDiv.innerHTML += `<div class="chat-user">${escapeHtml(message)}</div>`;
+
+  // Add user message
+  messagesDiv.innerHTML += `<div class="chat-message user-message">
+    <div class="chat-avatar">👤</div>
+    <div class="chat-bubble">${escapeHtml(message)}</div>
+  </div>`;
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  
+
   // Add to history
   chatHistory.push({ role: 'user', content: message });
-  
+
   try {
     // Build history string
     const historyStr = chatHistory.slice(0, -1).map(h => `${h.role === 'user' ? 'User' : 'Assistant'}: ${h.content}`).join('\n');
-    
+
     const res = await api(EP.CHAT, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${USER_TOKEN}` },
       body: JSON.stringify({ message, history: historyStr }),
     });
-    
+
     // Add AI response to history
     chatHistory.push({ role: 'assistant', content: res.response });
-    
-    messagesDiv.innerHTML += `<div class="chat-ai">${escapeHtml(res.response)}</div>`;
+
+    // Add AI response
+    messagesDiv.innerHTML += `<div class="chat-message ai-message">
+      <div class="chat-avatar">🤖</div>
+      <div class="chat-bubble">${escapeHtml(res.response).replace(/\n/g, '<br>')}</div>
+    </div>`;
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   } catch (err) {
-    messagesDiv.innerHTML += `<div class="chat-ai">Error: ${err.message}</div>`;
+    messagesDiv.innerHTML += `<div class="chat-message ai-message">
+      <div class="chat-avatar">🤖</div>
+      <div class="chat-bubble">Sorry, I couldn't process your question. Please try again.</div>
+    </div>`;
   }
 }
 
 function handleChatKey(event) {
   if (event.key === 'Enter') sendChat();
+}
+
+function startNewChat() {
+  // Clear chat history
+  chatHistory = [];
+  // Clear messages display
+  const messagesDiv = document.getElementById('chat-messages');
+  messagesDiv.innerHTML = `<div class="chat-message ai-message">
+    <div class="chat-avatar">🤖</div>
+    <div class="chat-bubble">
+      Hello! I'm your travel assistant. Ask me about visas, health requirements, cultural tips, emergency contacts, or anything else about African destinations. What would you like to know?
+    </div>
+  </div>`;
+  // Clear input
+  document.getElementById('chat-input').value = '';
+  // Scroll to bottom
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function toggleChatHistory() {
+  // For now, just show a placeholder message
+  const messagesDiv = document.getElementById('chat-messages');
+  messagesDiv.innerHTML += `<div class="chat-message ai-message">
+    <div class="chat-avatar">🤖</div>
+    <div class="chat-bubble">
+      Chat history feature is coming soon! For now, you can start a new chat to clear the conversation.
+    </div>
+  </div>`;
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
 function updateChatHeader(c) {
@@ -936,10 +1004,10 @@ async function loadAds() {
     const ads = res.ads || [];
     const html = ads.map(a => `
       <div class="ad-item">
-        <img src="${escapeHtml(a.image_url || '')}" alt="${escapeHtml(a.title)}" style="max-width:100px;">
+        <img src="${safeUrl(a.image_url || '')}" alt="${escapeHtml(a.title)}" style="max-width:100px;">
         <h4>${escapeHtml(a.title)}</h4>
         <p>${escapeHtml(a.description || '')}</p>
-        <a href="${escapeHtml(a.link_url || '#')}">Learn more</a>
+        <a href="${safeUrl(a.link_url || '#') || '#'}">Learn more</a>
       </div>
     `).join('');
     setEl('ads-list', html || '<p>No ads available.</p>');
@@ -956,8 +1024,14 @@ async function init() {
     ALL = Array.isArray(res) ? res : (res.countries || res.data || []);
     setLoader(60, 'Rendering countries...');
     renderCountries(ALL);
-    setLoader(80, 'Loading news and ads...');
-    await Promise.all([loadNews(), loadAds()]);
+    setLoader(80, 'Loading ads...');
+    await loadAds();
+    // Only subscribers (logged-in users) see news in the main view
+    if (USER_TOKEN) {
+      await loadNews();
+    } else {
+      setEl('news-list', '<p>Please login or subscribe to see travel news.</p>');
+    }
     setLoader(100, 'Ready!');
     hideLoader();
     showApp();
