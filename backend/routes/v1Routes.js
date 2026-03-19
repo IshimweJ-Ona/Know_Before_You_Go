@@ -18,6 +18,7 @@ import {
     getNews,
     getAds,
     aiChat,
+    deleteSubscriber,
 } from "../controllers/v1Controller.js";
 import { requireAdmin } from "../middleware/auth.js";
 
@@ -37,6 +38,7 @@ router.post("/admin/login", loginAdmin);
 router.get("/admin/subscribers", requireAdmin, listSubscribers);
 router.get("/admin/feedback", requireAdmin, listFeedback);
 router.patch("/admin/countries/:code", requireAdmin, updateCountryAdmin);
+router.delete("/admin/subscribers/:id", requireAdmin, deleteSubscriber);
 
 // Subscriber routes
 router.post("/subscriber/signup", signupSubscriber);

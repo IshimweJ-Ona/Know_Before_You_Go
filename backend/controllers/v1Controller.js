@@ -360,6 +360,16 @@ export const listSubscribers = async (_req, res) => {
     }
 };
 
+export const deleteSubscriber = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query("DELETE FROM users WHERE id = ? AND role = 'subscriber'", [id]);
+        res.status(200).json({ message: "Subscriber deleted." });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to delete subscriber." });
+    }
+};
+
 export const createAdmin = async (req, res) => {
     const { email, full_name, password, role } = req.body || {};
     if (!email || !password) {
@@ -558,7 +568,20 @@ export const getNews = async (req, res) => {
             params.push(category);
         }
         const [rows] = await pool.query(query, params);
-        res.status(200).json({ news: rows });
+        // If no news in DB, fetch from external sources for countries
+        if (rows.length === 0) {
+            // Mock external news fetching
+            const countries = ['Kenya', 'Tanzania', 'Rwanda', 'Uganda', 'Ethiopia']; // From DB
+            const mockNews = countries.map(c => ({
+                title: `Latest Travel News for ${c}`,
+                content: `Recent updates on travel to ${c}, including visa changes and safety alerts.`,
+                published_at: new Date().toISOString()
+            }));
+            // In production, integrate with NewsAPI or similar service
+            res.status(200).json({ news: mockNews });
+        } else {
+            res.status(200).json({ news: rows });
+        }
     } catch (error) {
         console.error("getNews error:", error);
         res.status(500).json({ message: "Failed to fetch news." });
