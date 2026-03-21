@@ -5,13 +5,14 @@
  *
  * Change API_BASE to your deployed backend URL before going live.
  *   Local   → http://localhost:5000
- *   Render  → https://your-app.onrender.com
- *   Railway → https://your-app.up.railway.app
+ *   Production → https://your-domain.com
  */
 
 const API_BASE = window.API_BASE
   || localStorage.getItem('API_BASE')
   || window.location.origin;
+
+console.log('[CONFIG] API_BASE:', API_BASE);
 
 const EP = {
   COUNTRIES:  '/api/v1/countries',
@@ -24,4 +25,11 @@ const EP = {
   GENERAL:    (code) => `/api/v1/general/${code}`,
   NEWSLETTER: '/api/v1/newsletter',
   AI_QUERY:   '/api/ai/query',
+  SUBSCRIBER_SIGNUP: '/api/v1/subscriber/signup',
+  SUBSCRIBER_LOGIN: '/api/v1/subscriber/login',
+  NEWS: '/api/v1/news',
+  ADS: '/api/v1/ads',
+  CHAT: '/api/v1/chat',
+  ADMIN_LOGIN: '/api/v1/admin/login',
+  ADMIN_SUBSCRIBERS: '/api/v1/admin/subscribers',
 };

@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import crypto from "crypto";
@@ -10,8 +9,7 @@ import aiRoutes from "./routes/aiRoutes.js";
 import countryRoutes from "./routes/countryRoutes.js";
 import v1Routes from "./routes/v1Routes.js";
 import pool from "./config/db.js";
-
-dotenv.config();
+import { env } from "./config/env.js";
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -59,9 +57,27 @@ const adminLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+const subscriberLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    limit: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Disable caching for API responses
+app.use("/api/", (req, res, next) => {
+    res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+    });
+    next();
+});
+
 app.use("/api/ai", aiLimiter, aiRoutes);
 app.use("/api/countries", countryRoutes);
 app.use("/api/v1/admin", adminLimiter);
+app.use("/api/v1/subscriber", subscriberLimiter);
 app.use("/api/v1", v1Routes);
 
 app.use("/admin", express.static(adminFrontendPath));

@@ -1,6 +1,11 @@
 CREATE DATABASE IF NOT EXISTS ai_db;
 USE ai_db;
 
+-- Create user and grant privileges
+CREATE USER IF NOT EXISTS 'kbyg_user'@'%' IDENTIFIED BY 'kbyg_password';
+GRANT ALL PRIVILEGES ON ai_db.* TO 'kbyg_user'@'%';
+FLUSH PRIVILEGES;
+
 -- Core countries table
 CREATE TABLE IF NOT EXISTS countries (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -168,3 +173,39 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE INDEX idx_users_role ON users(role);
+
+-- News table for travel updates
+CREATE TABLE IF NOT EXISTS news (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    country_code CHAR(2),
+    category ENUM('visa', 'airport', 'transportation', 'general') NOT NULL,
+    published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (country_code) REFERENCES countries(country_code) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_news_country ON news(country_code);
+CREATE INDEX idx_news_category ON news(category);
+CREATE INDEX idx_news_active_published ON news(is_active, published_at);
+
+-- Advertisements table
+CREATE TABLE IF NOT EXISTS advertisements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    company_name VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    image_url VARCHAR(255),
+    link_url VARCHAR(255),
+    target_country CHAR(2),
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (target_country) REFERENCES countries(country_code) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_ads_country ON advertisements(target_country);
+CREATE INDEX idx_ads_active_created ON advertisements(is_active, created_at);

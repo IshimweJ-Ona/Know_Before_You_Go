@@ -198,12 +198,13 @@ async function doSignup() {
   const name     = document.getElementById('signup-name').value.trim();
   const email    = document.getElementById('signup-email').value.trim();
   const password = document.getElementById('signup-password').value;
+  const token    = document.getElementById('signup-token').value.trim();
   const errEl    = document.getElementById('login-err');
   const btn      = document.getElementById('signup-btn');
   errEl.style.display = 'none';
 
-  if (!email || !password) {
-    errEl.textContent = 'Please enter your email and password.';
+  if (!email || !password || !token) {
+    errEl.textContent = 'Please enter email, password, and setup token.';
     errEl.style.display = 'block';
     return;
   }
@@ -211,9 +212,15 @@ async function doSignup() {
   btn.disabled = true; btn.textContent = 'Creating...';
 
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['x-setup-token'] = token;
+    }
     const res  = await fetch(`${ADMIN_API}/api/v1/admin`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ email, full_name: name, password }),
     });
     const data = await res.json();

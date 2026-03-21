@@ -13,8 +13,14 @@ import {
     loginAdmin,
     listFeedback,
     updateCountryAdmin,
+    signupSubscriber,
+    loginSubscriber,
+    getNews,
+    getAds,
+    aiChat,
+    deleteSubscriber,
 } from "../controllers/v1Controller.js";
-import { requireAdmin } from "../middleware/auth.js";
+import { requireAdmin, requireSubscriber } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -32,5 +38,20 @@ router.post("/admin/login", loginAdmin);
 router.get("/admin/subscribers", requireAdmin, listSubscribers);
 router.get("/admin/feedback", requireAdmin, listFeedback);
 router.patch("/admin/countries/:code", requireAdmin, updateCountryAdmin);
+router.delete("/admin/subscribers/:id", requireAdmin, deleteSubscriber);
+
+// Subscriber routes
+router.post("/subscriber/signup", signupSubscriber);
+router.post("/subscriber/login", loginSubscriber);
+
+// News and Ads
+router.get("/news", getNews);
+router.get("/ads", getAds);
+
+// AI Chat
+router.post("/chat", requireSubscriber, aiChat);
+
+// AI Chat
+router.post("/chat", aiChat);
 
 export default router;

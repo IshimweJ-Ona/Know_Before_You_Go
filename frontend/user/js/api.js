@@ -13,8 +13,19 @@ async function api(path, opts = {}) {
     ...opts.headers,
   };
 
-  const res  = await fetch(API_BASE + path, { ...opts, headers });
+  const token = localStorage.getItem('user_token');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const fullUrl = API_BASE + path;
+  console.log('[API] Calling:', fullUrl);
+  
+  const res  = await fetch(fullUrl, { ...opts, headers });
   const body = await res.json().catch(() => ({}));
+
+  console.log('[API] Response status:', res.status);
+  console.log('[API] Response body:', body);
 
   if (!res.ok) {
     throw new Error(body.message || body.error || `HTTP ${res.status}`);

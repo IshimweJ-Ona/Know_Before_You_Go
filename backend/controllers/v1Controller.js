@@ -91,41 +91,15 @@ const fetchCountryByCode = async (code) => {
 
 const ASSISTANT_CACHE_TTL_SECONDS = 10 * 60;
 const BUNDLE_CACHE_TTL_SECONDS = 10 * 60;
-const assistantMemoryCache = new Map();
-const bundleMemoryCache = new Map();
+import { createMemoryCache } from "../utils/memoryCache.js";
 
-const getAssistantMemoryCache = (key) => {
-    const hit = assistantMemoryCache.get(key);
-    if (!hit) return null;
-    if (Date.now() > hit.expiresAt) {
-        assistantMemoryCache.delete(key);
-        return null;
-    }
-    return hit.value;
-};
+const assistantCache = createMemoryCache(ASSISTANT_CACHE_TTL_SECONDS);
+const bundleCache = createMemoryCache(BUNDLE_CACHE_TTL_SECONDS);
 
-const setAssistantMemoryCache = (key, value, ttlSeconds) => {
-    assistantMemoryCache.set(key, { value, expiresAt: Date.now() + ttlSeconds * 1000 });
-};
-
-const getBundleMemoryCache = (key) => {
-    const hit = bundleMemoryCache.get(key);
-    if (!hit) return null;
-    if (Date.now() > hit.expiresAt) {
-        bundleMemoryCache.delete(key);
-        return null;
-    }
-    return hit.value;
-};
-
-const setBundleMemoryCache = (key, value, ttlSeconds) => {
-    bundleMemoryCache.set(key, { value, expiresAt: Date.now() + ttlSeconds * 1000 });
-};
-
-const getAssistantCache = (key) => getAssistantMemoryCache(key);
-const setAssistantCache = (key, value) => setAssistantMemoryCache(key, value, ASSISTANT_CACHE_TTL_SECONDS);
-const getBundleCache = (key) => getBundleMemoryCache(key);
-const setBundleCache = (key, value) => setBundleMemoryCache(key, value, BUNDLE_CACHE_TTL_SECONDS);
+const getAssistantCache = (key) => assistantCache.get(key);
+const setAssistantCache = (key, value) => assistantCache.set(key, value);
+const getBundleCache = (key) => bundleCache.get(key);
+const setBundleCache = (key, value) => bundleCache.set(key, value);
 
 const fetchCountryBundle = async (code) => {
     const country = await fetchCountryByCode(code);
@@ -238,8 +212,11 @@ export const listCountries = async (_req, res) => {
              FROM countries c
              ORDER BY c.country_name`
         );
-        res.status(200).json(rows.map((row) => normalizeRow(row, COUNTRY_LIST_COLUMNS)));
+        const normalized = rows.map((row) => normalizeRow(row, COUNTRY_LIST_COLUMNS));
+        console.log('[listCountries] Fetched', normalized.length, 'countries');
+        res.status(200).json(normalized);
     } catch (error) {
+        console.error('[listCountries] Error:', error.message);
         res.status(500).json({ message: "Failed to load countries." });
     }
 };
@@ -317,10 +294,16 @@ export const getCountryAssistant = async (req, res) => {
                 aiText = await generateAnswer({
                     intent: "country_profile",
                     data: bundle,
-                    question: `Provide a concise, well-structured travel overview for ${bundle.country.country_name}.`,
+                    question: `Provide a concise, well-structured travel overview for ${bundle.country.country_name}. Focus on visas, health, safety, emergency services, and cultural norms.`,
+                    countryName: bundle.country.country_name,
                 });
             }
         } catch (aiError) {
+            console.error("AI generation failed (country assistant):", {
+                message: aiError?.message || aiError,
+                intent: "country_profile",
+                country: bundle.country?.country_name,
+            });
             aiText = "";
         }
 
@@ -333,15 +316,20 @@ export const getCountryAssistant = async (req, res) => {
 };
 
 export const createNewsletter = async (req, res) => {
-    const { email, name } = req.body || {};
+    const { email, name, password } = req.body || {};
     if (!email) return res.status(400).json({ message: "Email is required." });
+    if (!password) return res.status(400).json({ message: "Password is required." });
     try {
+        const hashedPassword = await bcrypt.hash(password, 10);
         await pool.query(
-            "INSERT IGNORE INTO users (email, full_name, role, source) VALUES (?, ?, 'subscriber', ?)",
-            [email.trim().toLowerCase(), name || null, "frontend"]
+            "INSERT IGNORE INTO users (email, full_name, role, password_hash, source) VALUES (?, ?, 'subscriber', ?, ?)",
+            [email.trim().toLowerCase(), name || null, hashedPassword, "frontend"]
         );
         res.status(200).json({ success: true });
     } catch (error) {
+        if (error?.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({ message: "Email already subscribed." });
+        }
         res.status(500).json({ message: "Failed to subscribe." });
     }
 };
@@ -354,6 +342,16 @@ export const listSubscribers = async (_req, res) => {
         res.status(200).json({ subscribers: rows });
     } catch (error) {
         res.status(500).json({ message: "Failed to load subscribers." });
+    }
+};
+
+export const deleteSubscriber = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query("DELETE FROM users WHERE id = ? AND role = 'subscriber'", [id]);
+        res.status(200).json({ message: "Subscriber deleted." });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to delete subscriber." });
     }
 };
 
@@ -475,5 +473,153 @@ export const updateCountryAdmin = async (req, res) => {
         res.status(200).json(normalizeRow(updatedRows[0], COUNTRY_LIST_COLUMNS));
     } catch (error) {
         res.status(500).json({ message: "Failed to update country." });
+    }
+};
+
+// Subscriber signup
+export const signupSubscriber = async (req, res) => {
+    const { email, password, full_name } = req.body || {};
+    if (!email || !password || !full_name) {
+        return res.status(400).json({ message: "Email, password, and full name are required." });
+    }
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await pool.query(
+            "INSERT INTO users (email, full_name, role, password_hash) VALUES (?, ?, 'subscriber', ?)",
+            [email.trim().toLowerCase(), full_name.trim(), hashedPassword]
+        );
+        res.status(201).json({ message: "Subscriber account created successfully." });
+    } catch (error) {
+        if (error?.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({ message: "Email already exists." });
+        }
+        res.status(500).json({ message: "Failed to create account." });
+    }
+};
+
+// Subscriber login
+export const loginSubscriber = async (req, res) => {
+    const { email, password } = req.body || {};
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required." });
+    }
+    try {
+        if (!process.env.JWT_SECRET) {
+            return res.status(500).json({ message: "Server misconfiguration." });
+        }
+        const [rows] = await pool.query(
+            "SELECT id, email, full_name, role, is_active, password_hash FROM users WHERE email = ? AND role = 'subscriber' LIMIT 1",
+            [email.trim().toLowerCase()]
+        );
+        const user = rows[0];
+        if (!user || !user.is_active) {
+            return res.status(401).json({ message: "Invalid credentials." });
+        }
+        const ok = await bcrypt.compare(password, user.password_hash || "");
+        if (!ok) return res.status(401).json({ message: "Invalid credentials." });
+
+        const token = jwt.sign(
+            { id: user.id, email: user.email, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: "30d" }
+        );
+
+        res.status(200).json({
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                full_name: user.full_name,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to login." });
+    }
+};
+
+// Get news
+export const getNews = async (req, res) => {
+    try {
+        const { country, category } = req.query;
+        let query =
+            "SELECT id, title, content, country_code, category, published_at FROM news WHERE is_active = 1";
+        const params = [];
+
+        if (country) {
+            query += " AND country_code = ?";
+            params.push(country.toUpperCase());
+        }
+
+        if (category) {
+            query += " AND category = ?";
+            params.push(category);
+        }
+
+        query += " ORDER BY published_at DESC";
+
+        const [rows] = await pool.query(query, params);
+        // If no news in DB, fetch from external sources for countries
+        if (rows.length === 0) {
+            // Mock external news fetching
+            const countries = ['Kenya', 'Tanzania', 'Rwanda', 'Uganda', 'Ethiopia']; // From DB
+            const mockNews = countries.map(c => ({
+                title: `Latest Travel News for ${c}`,
+                content: `Recent updates on travel to ${c}, including visa changes and safety alerts.`,
+                published_at: new Date().toISOString()
+            }));
+            // In production, integrate with NewsAPI or similar service
+            res.status(200).json({ news: mockNews });
+        } else {
+            res.status(200).json({ news: rows });
+        }
+    } catch (error) {
+        console.error("getNews error:", error);
+        res.status(500).json({ message: "Failed to fetch news." });
+    }
+};
+
+// Get advertisements
+export const getAds = async (req, res) => {
+    try {
+        const { country } = req.query;
+        let query = "SELECT id, company_name, title, description, image_url, link_url FROM advertisements WHERE is_active = 1";
+        const params = [];
+        if (country) {
+            query += " AND (target_country IS NULL OR target_country = ?)";
+            params.push(country.toUpperCase());
+        }
+        query += " ORDER BY created_at DESC";
+        const [rows] = await pool.query(query, params);
+        res.status(200).json({ ads: rows });
+    } catch (error) {
+        console.error("getAds error:", error);
+        res.status(500).json({ message: "Failed to fetch ads." });
+    }
+};
+
+// AI Chat
+export const aiChat = async (req, res) => {
+    const { message, history } = req.body || {};
+    if (!message) {
+        return res.status(400).json({ message: "Message is required." });
+    }
+    try {
+        const userPrompt = history ? `${history}\nUser: ${message}` : `User: ${message}`;
+
+        const response = await generateAnswer({
+            intent: "general_guide",
+            data: {},
+            question: userPrompt,
+        });
+
+        const text = typeof response === "string" ? response : response?.answer || "";
+        res.status(200).json({ response: text });
+    } catch (error) {
+        console.error("aiChat error:", {
+            message: error?.message || error,
+            query: String(message).slice(0, 160),
+        });
+        res.status(500).json({ message: "Failed to process chat." });
     }
 };

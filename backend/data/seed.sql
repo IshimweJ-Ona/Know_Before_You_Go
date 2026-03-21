@@ -8,21 +8,21 @@ INSERT IGNORE INTO countries
 VALUES
   ('RW', 'Rwanda', 'East Africa', 'Kigali', 'Rwandan Franc (RWF)', 'Kinyarwanda, English, French',
    '14 million', '230V / Type C & J', 'UTC+2', 'Not customary but appreciated',
-   'Tropical highland', 'The land of a thousand hills � Rwanda is one of Africa''s most progressive nations, known for cleanliness, safety, and mountain gorilla trekking.',
+   'Tropical highland', 'The land of a thousand hills – Rwanda is one of Africa''s most progressive nations, known for cleanliness, safety, and mountain gorilla trekking.',
    'Kigali has clean moto-taxis and taxis; intercity buses connect to Musanze, Rubavu, and Huye; car hire is available for national parks.',
    'Kigali offers midrange hotels and serviced apartments; lodges near Volcanoes and Lake Kivu book early in peak season.',
    '', 1, 'Visa on Arrival', 0),
 
   ('KE', 'Kenya', 'East Africa', 'Nairobi', 'Kenyan Shilling (KES)', 'Swahili, English',
    '55 million', '240V / Type G', 'UTC+3', 'Common in restaurants and hotels (10%)',
-   'Varied � arid north, tropical coast', 'Kenya is the gateway to East African safari � from the Maasai Mara to pristine Indian Ocean beaches and the cosmopolitan capital Nairobi.',
+   'Varied – arid north, tropical coast', 'Kenya is the gateway to East African safari – from the Maasai Mara to pristine Indian Ocean beaches and the cosmopolitan capital Nairobi.',
    'Nairobi has ride-hailing and matatus; domestic flights connect Nairobi to Mombasa and Kisumu; safaris use tour vans or 4x4 vehicles.',
    'Options range from budget hostels to safari lodges and beach resorts; book the coast early in Dec-Mar and Jul-Oct.',
    '', 2, 'eVisa Required', 1),
 
   ('TZ', 'Tanzania', 'East Africa', 'Dodoma', 'Tanzanian Shilling (TZS)', 'Swahili, English',
    '63 million', '230V / Type D & G', 'UTC+3', 'Expected in tourist areas (10%)',
-   'Tropical and semi-arid', 'Tanzania holds Africa''s highest peak, the largest wildlife reserve, and the magical islands of Zanzibar � a complete East African experience.',
+   'Tropical and semi-arid', 'Tanzania holds Africa''s highest peak, the largest wildlife reserve, and the magical islands of Zanzibar – a complete East African experience.',
    'Domestic flights link Dar es Salaam, Arusha, and Zanzibar; dala-dala minibuses run in cities; safari transfers are by 4x4.',
    'Hotels in Dar and Arusha, beach resorts in Zanzibar; park lodges are limited and should be booked early.',
    '', 1, 'Visa on Arrival', 1),
@@ -43,35 +43,35 @@ VALUES
 
   ('GH', 'Ghana', 'West Africa', 'Accra', 'Ghanaian Cedi (GHS)', 'English',
    '33 million', '230V / Type D & G', 'UTC+0', 'Appreciated but not mandatory',
-   'Tropical', 'Known as the gateway to West Africa � Ghana is celebrated for its warm hospitality, rich Ashanti heritage, Cape Coast history, and some of the continent''s best beaches.',
+   'Tropical', 'Known as the gateway to West Africa – Ghana is celebrated for its warm hospitality, rich Ashanti heritage, Cape Coast history, and some of the continent''s best beaches.',
    'Taxis and ride-hailing in Accra; tro-tro minibuses for budget travel; domestic flights to Kumasi and Tamale.',
    'Accra has hotels and apartments; beach resorts near Cape Coast and Ada; book during festivals.',
    '', 1, 'Visa on Arrival', 0),
 
   ('ZA', 'South Africa', 'Southern Africa', 'Pretoria', 'South African Rand (ZAR)', 'Zulu, Xhosa, Afrikaans, English + 8 others',
    '60 million', '230V / Type M', 'UTC+2', 'Expected in restaurants (10�15%)',
-   'Varied � Mediterranean, semi-arid, subtropical', 'South Africa packs extraordinary diversity into one country � Cape Town''s mountains, Kruger''s wildlife, the Winelands, and a rich, complex history that shaped a rainbow nation.',
+   'Varied – Mediterranean, semi-arid, subtropical', 'South Africa packs extraordinary diversity into one country – Cape Town''s mountains, Kruger''s wildlife, the Winelands, and a rich, complex history that shaped a rainbow nation.',
    'Domestic flights connect major cities; ride-hailing in metro areas; car hire is common for the Garden Route.',
    'Wide range from hostels to boutique hotels and safari lodges; peak season is Dec-Jan.',
    '', 2, 'Visa Free (many nationalities)', 0),
 
   ('MA', 'Morocco', 'North Africa', 'Rabat', 'Moroccan Dirham (MAD)', 'Arabic, Amazigh, French',
    '37 million', '220V / Type C & E', 'UTC+1', 'Expected in restaurants and for guides (10�15%)',
-   'Mediterranean coast, arid interior', 'Morocco is a sensory feast � ancient medinas, Saharan dunes, imperial cities, and the Atlas Mountains, all meeting point between Africa, Arabia, and Europe.',
+   'Mediterranean coast, arid interior', 'Morocco is a sensory feast – ancient medinas, Saharan dunes, imperial cities, and the Atlas Mountains, all meeting point between Africa, Arabia, and Europe.',
    'Intercity trains (ONCF) and buses are reliable; taxis in cities; domestic flights to Marrakech and Agadir.',
    'Riads in medinas, modern hotels, and desert camps; book early for Marrakech and Fes.',
    '', 1, 'Visa Free (many nationalities)', 0),
 
   ('ET', 'Ethiopia', 'East Africa', 'Addis Ababa', 'Ethiopian Birr (ETB)', 'Amharic',
    '125 million', '220V / Type C & L', 'UTC+3', 'Not expected',
-   'Varied � highland, semi-arid', 'Ethiopia is one of the oldest civilisations on Earth � home to the Ark of the Covenant, Lalibela''s rock-hewn churches, the ancient city of Axum, and the cradle of coffee.',
+   'Varied – highland, semi-arid', 'Ethiopia is one of the oldest civilisations on Earth – home to the Ark of the Covenant, Lalibela''s rock-hewn churches, the ancient city of Axum, and the cradle of coffee.',
    'Domestic flights via Ethiopian Airlines; intercity buses and minibuses; ride-hailing is limited outside Addis.',
    'Hotels in Addis Ababa; lodges near Lalibela and the Simien Mountains; book for major holidays.',
    '', 2, 'eVisa Required', 1),
 
   ('SN', 'Senegal', 'West Africa', 'Dakar', 'West African CFA Franc (XOF)', 'French, Wolof',
    '17 million', '230V / Type C & D', 'UTC+0', 'Appreciated in restaurants (10%)',
-   'Tropical, Sahelian', 'Senegal is West Africa''s most stable democracy and cultural capital � Dakar''s arts scene, the sacred Goree Island, pink Lake Retba, and Casamance''s lush landscapes.',
+   'Tropical, Sahelian', 'Senegal is West Africa''s most stable democracy and cultural capital – Dakar''s arts scene, the sacred Goree Island, pink Lake Retba, and Casamance''s lush landscapes.',
    'Taxis and ride-hailing in Dakar; sept-place shared taxis and buses to regions; ferry to Goree Island.',
    'Hotels in Dakar and beach resorts in Saly; guesthouses in Casamance; book in the dry season.',
    '', 1, 'Visa Free (many nationalities)', 0);
@@ -119,7 +119,7 @@ SELECT c.id, 'Mount Kilimanjaro', 'Africa''s highest peak at 5,895m', 'https://i
 FROM countries c WHERE c.country_code = 'TZ';
 
 INSERT IGNORE INTO places (country_id, name, description, image_url)
-SELECT c.id, 'Bwindi Impenetrable Forest', 'UNESCO site � home to half the world''s mountain gorillas', 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&q=75'
+SELECT c.id, 'Bwindi Impenetrable Forest', 'UNESCO site – home to half the world''s mountain gorillas', 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&q=75'
 FROM countries c WHERE c.country_code = 'UG';
 
 INSERT IGNORE INTO places (country_id, name, description, image_url)
@@ -143,7 +143,7 @@ SELECT c.id, 'Osun-Osogbo Sacred Grove', 'UNESCO World Heritage site', 'https://
 FROM countries c WHERE c.country_code = 'NG';
 
 INSERT IGNORE INTO places (country_id, name, description, image_url)
-SELECT c.id, 'Cape Coast Castle', 'UNESCO site � a powerful reminder of the slave trade', 'https://images.unsplash.com/photo-1614859324967-b4e51c9d9c80?w=600&q=75'
+SELECT c.id, 'Cape Coast Castle', 'UNESCO site – a powerful reminder of the slave trade', 'https://images.unsplash.com/photo-1614859324967-b4e51c9d9c80?w=600&q=75'
 FROM countries c WHERE c.country_code = 'GH';
 
 INSERT IGNORE INTO places (country_id, name, description, image_url)
@@ -191,7 +191,7 @@ SELECT c.id, 'Danakil Depression', 'One of the most extreme landscapes on Earth'
 FROM countries c WHERE c.country_code = 'ET';
 
 INSERT IGNORE INTO places (country_id, name, description, image_url)
-SELECT c.id, 'Goree Island', 'UNESCO island � historic centre of the Atlantic slave trade', 'https://images.unsplash.com/photo-1614859324967-b4e51c9d9c80?w=600&q=75'
+SELECT c.id, 'Goree Island', 'UNESCO island – historic centre of the Atlantic slave trade', 'https://images.unsplash.com/photo-1614859324967-b4e51c9d9c80?w=600&q=75'
 FROM countries c WHERE c.country_code = 'SN';
 
 INSERT IGNORE INTO places (country_id, name, description, image_url)
@@ -706,5 +706,18 @@ SELECT r.advisory_id, risk FROM (
   UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'SN'), 'Dengue'
   UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'SN'), 'Cholera'
 ) AS r(advisory_id, risk);
+
+-- -- NEWS ---------------------------------------------------
+INSERT IGNORE INTO news (title, content, country_code, category, published_at) VALUES
+('Visa Changes for Kenya', 'Kenya has updated its e-visa process. New requirements include biometric data submission.', 'KE', 'visa', NOW()),
+('Airport Updates in Tanzania', 'Kilimanjaro International Airport now offers 24/7 operations with new lounges.', 'TZ', 'airport', NOW()),
+('Transportation Costs in Rwanda', 'Average taxi fare in Kigali has increased by 10% due to fuel prices.', 'RW', 'transportation', NOW()),
+('General Travel Advisory', 'Check latest health guidelines before traveling to any African destination.', NULL, 'general', NOW());
+
+-- -- ADS ----------------------------------------------------
+INSERT IGNORE INTO advertisements (company_name, title, description, image_url, link_url, target_country) VALUES
+('TravelAgency Inc.', 'Book Your African Safari', 'Exclusive deals on safaris in Kenya and Tanzania.', 'https://example.com/image1.jpg', 'https://travelagency.com', 'KE'),
+('HotelChain Ltd.', 'Luxury Stays in Morocco', 'Experience the best hotels in Marrakech.', 'https://example.com/image2.jpg', 'https://hotelchain.com', 'MA'),
+('Airline Co.', 'Flights to Ethiopia', 'Direct flights from major cities to Addis Ababa.', 'https://example.com/image3.jpg', 'https://airline.com', NULL);
 
 

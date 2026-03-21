@@ -41,8 +41,111 @@
           <label class="f-label" for="nl-email">Email address</label>
           <input type="email" class="f-input" id="nl-email" placeholder="traveller@example.com" autocomplete="email">
         </div>
+        <div class="f-group">
+          <label class="f-label" for="nl-password">Password</label>
+          <input type="password" class="f-input" id="nl-password" placeholder="Create a password" autocomplete="new-password">
+        </div>
         <button class="btn-primary" id="nl-btn" onclick="submitNewsletter()">Subscribe</button>
         <p class="nl-disclaimer">No spam. Unsubscribe at any time.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN MODAL -->
+  <div id="login-overlay" onclick="closeLogin(event)">
+    <div id="login-modal">
+      <button class="nl-close" onclick="closeLoginBtn()" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="nl-label">Subscriber Access</div>
+      <div class="nl-title">Login to Your Account</div>
+      <div class="nl-error" id="login-err"></div>
+      <div class="nl-success" id="login-ok">Login successful!</div>
+      <div id="login-form">
+        <div class="f-group">
+          <label class="f-label" for="login-email">Email address</label>
+          <input type="email" class="f-input" id="login-email" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="f-group">
+          <label class="f-label" for="login-password">Password</label>
+          <input type="password" class="f-input" id="login-password" placeholder="Password" autocomplete="current-password">
+        </div>
+        <button class="btn-primary" id="login-btn" onclick="submitLogin()">Login</button>
+        <p class="nl-disclaimer">Don't have an account? <a href="#" onclick="switchToSignup()">Sign up</a></p>
+      </div>
+      <div id="signup-form" style="display:none;">
+        <div class="f-group">
+          <label class="f-label" for="signup-name">Full name</label>
+          <input type="text" class="f-input" id="signup-name" placeholder="Your name" autocomplete="name">
+        </div>
+        <div class="f-group">
+          <label class="f-label" for="signup-email">Email address</label>
+          <input type="email" class="f-input" id="signup-email" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div class="f-group">
+          <label class="f-label" for="signup-password">Password</label>
+          <input type="password" class="f-input" id="signup-password" placeholder="Password" autocomplete="new-password">
+        </div>
+        <button class="btn-primary" id="signup-btn" onclick="submitSignup()">Sign Up</button>
+        <p class="nl-disclaimer">Already have an account? <a href="#" onclick="switchToLogin()">Login</a></p>
+      </div>
+      <div id="subscriber-news" style="display:none;">
+        <h3>Latest News</h3>
+        <div id="news-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN LOGIN MODAL -->
+  
+
+  <!-- CHAT MODAL - REDESIGNED -->
+  <div id="chat-overlay" onclick="closeChat(event)">
+    <div id="chat-modal" class="chat-app-container">
+      <!-- Sidebar -->
+      <aside class="chat-sidebar">
+        <div class="chat-sidebar-header">
+          <h2 class="chat-logo">KBYG</h2>
+          <button class="chat-close-btn" onclick="closeChatBtn()" aria-label="Close">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <nav class="chat-menu">
+          <button class="chat-menu-item" onclick="startNewChat()">💬 New Chat</button>
+          <button class="chat-menu-item" onclick="toggleChatHistory()">📋 History</button>
+          <button class="chat-menu-item" disabled>⚙️ Settings</button>
+        </nav>
+      </aside>
+
+      <!-- Main Chat Area -->
+      <div class="chat-main">
+        <!-- Header -->
+        <header class="chat-header">
+          <div class="chat-header-content">
+            <h1>Travel Assistant</h1>
+            <p>Ask me anything about African destinations</p>
+          </div>
+        </header>
+
+        <!-- Messages Area -->
+        <section class="chat-messages" id="chat-messages">
+          <div class="chat-message ai-message">
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-bubble">
+              Hello! I'm your travel assistant. Ask me about visas, health requirements, cultural tips, emergency contacts, or anything else about African destinations. What would you like to know?
+            </div>
+          </div>
+        </section>
+
+        <!-- Input Area -->
+        <footer class="chat-input-footer">
+          <div class="chat-input-wrapper">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Ask about visas, health, emergencies, culture..." onkeypress="handleChatKey(event)" autocomplete="off">
+            <button class="chat-send-btn" onclick="sendChat()" aria-label="Send message">
+              <svg viewBox="0 0 24 24"><path d="M16 16l8-8m0 0l-8-8m8 8H2" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </footer>
       </div>
     </div>
   </div>
@@ -54,8 +157,17 @@
     <nav id="nav">
       <div class="nav-logo">KBYG</div>
       <div class="nav-right">
-        <button class="nav-nl-btn" onclick="openNL()">Subscribe to updates</button>
-      </div>
+        <button class="nav-btn" id="login-btn" onclick="openLogin()">Login</button>
+        <button class="nav-btn" id="chat-btn" onclick="openChat()">AI Chat</button>
+        <button class="nav-nl-btn" onclick="openNL()">Subscribe to News</button>        <div id="user-profile" style="display:none;" class="user-profile">
+          <div class="user-avatar" onclick="toggleUserMenu()">
+            <span id="user-initials">U</span>
+          </div>
+          <div id="user-menu" class="user-menu" style="display:none;">
+            <div class="user-name" id="user-menu-name">User Name</div>
+            <button onclick="logoutUser()" class="user-logout">Logout</button>
+          </div>
+        </div>      </div>
     </nav>
 
     <!-- HOME VIEW -->
@@ -99,6 +211,22 @@
 
       <div id="grid"></div>
 
+      <!-- NEWS SECTION -->
+      <section id="news-section" role="region" aria-label="Latest travel news">
+        <div class="section-bar">
+          <span class="sb-label">Latest Travel News</span>
+        </div>
+        <div id="news-list"></div>
+      </section>
+
+      <!-- ADS SECTION -->
+      <section id="ads-section" role="region" aria-label="Sponsored travel offers">
+        <div class="section-bar">
+          <span class="sb-label">Sponsored</span>
+        </div>
+        <div id="ads-list"></div>
+      </section>
+
       <!-- NEWSLETTER SECTION -->
       <section id="nl-section">
         <div class="nl-sec-kicker">Stay ahead of the curve</div>
@@ -115,7 +243,6 @@
       <footer>
         <div class="footer-logo">KBYG</div>
         <div class="footer-copy">Travel Information Platform &nbsp;&mdash;&nbsp; Data from official government sources</div>
-        <button class="nav-nl-btn" style="margin-top:14px;" onclick="switchToAdmin()">Switch to admin</button>
       </footer>
 
     </div><!-- /home -->
@@ -126,7 +253,7 @@
       <div class="d-hero">
         <img id="d-img" src="" alt="" class="d-hero-img">
         <div class="d-hero-fade"></div>
-        <button class="d-back" onclick="goBack()">
+        <button class="d-back" onclick="goBack()" aria-label="Back to destination list">
           <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
           Back
         </button>
@@ -138,13 +265,13 @@
         </div>
       </div>
 
-      <div id="tabs">
-        <button class="tab on" onclick="switchTab('overview')">Overview</button>
-        <button class="tab"    onclick="switchTab('places')">Must Visit</button>
-        <button class="tab"    onclick="switchTab('rules')">Dos &amp; Don'ts</button>
-        <button class="tab"    onclick="switchTab('visa')">Visa</button>
-        <button class="tab"    onclick="switchTab('health')">Health</button>
-        <button class="tab"    onclick="switchTab('emergency')">Emergency</button>
+      <div id="tabs" role="tablist" aria-label="Country information sections">
+        <button class="tab on" onclick="switchTab('overview')" role="tab" aria-selected="true" aria-controls="p-overview">Overview</button>
+        <button class="tab"    onclick="switchTab('places')" role="tab" aria-selected="false" aria-controls="p-places">Must Visit</button>
+        <button class="tab"    onclick="switchTab('rules')" role="tab" aria-selected="false" aria-controls="p-rules">Dos &amp; Don'ts</button>
+        <button class="tab"    onclick="switchTab('visa')" role="tab" aria-selected="false" aria-controls="p-visa">Visa</button>
+        <button class="tab"    onclick="switchTab('health')" role="tab" aria-selected="false" aria-controls="p-health">Health</button>
+        <button class="tab"    onclick="switchTab('emergency')" role="tab" aria-selected="false" aria-controls="p-emergency">Emergency</button>
       </div>
 
       <div class="content">
@@ -192,16 +319,69 @@
           <div class="em-grid" id="d-em"></div>
         </div>
 
+        <div class="panel" id="p-chat">
+          <div class="s-head"><h2 id="chat-title">AI Travel Assistant</h2><p id="chat-subtitle">Ask me anything about this country - visas, health, transport, places to visit, and more!</p></div>
+          <div id="chat-container">
+            <div class="chat-app">
+              <aside class="chat-sidebar">
+                <h2 class="chat-logo">KBYG</h2>
+                <nav class="chat-menu">
+                  <button class="chat-menu-item" onclick="sendCountryChat()">New Chat</button>
+                  <button class="chat-menu-item" disabled>History (coming soon)</button>
+                  <button class="chat-menu-item" disabled>Settings (coming soon)</button>
+                </nav>
+              </aside>
+              <div class="chat-main">
+                <header class="chat-header">
+                  <h3>AI Travel Assistant</h3>
+                </header>
+                <section class="chat-messages" id="chat-messages">
+                  <div class="chat-message ai">
+                    <div class="chat-avatar">🤖</div>
+                    <div class="chat-bubble" id="chat-welcome">
+                      Hello! I am your traveler assistant. I can provide information about visas, health requirements, transportation, popular places to visit, and more. What would you like to know?
+                    </div>
+                  </div>
+                </section>
+                <footer class="chat-input">
+                  <input
+                    type="text"
+                    id="chat-input"
+                    placeholder="Ask about visas, health, emergency numbers, culture, or places to visit..."
+                    autocomplete="off"
+                    onkeypress="handleCountryChatKey(event)"
+                  >
+                  <button id="chat-send" onclick="sendCountryChat()">Send</button>
+                </footer>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div><!-- /content -->
 
       <!-- Detail footer -->
       <footer>
         <div class="footer-logo">KBYG</div>
         <div class="footer-copy">Always verify information with official sources before travel</div>
-        <button class="nav-nl-btn" style="margin-top:14px;" onclick="switchToAdmin()">Switch to admin</button>
       </footer>
 
     </div><!-- /detail -->
+
+    <!-- ADMIN VIEW -->
+    <div id="admin" style="display:none;">
+      <nav id="nav">
+        <div class="nav-logo">KBYG Admin</div>
+        <div class="nav-right">
+          <button class="nav-btn" onclick="logoutAdmin()">Logout</button>
+        </div>
+      </nav>
+      <div style="padding:48px;">
+        <h1>Admin Panel</h1>
+        <h2>Subscribers</h2>
+        <div id="subscribers-list"></div>
+      </div>
+    </div>
 
   </div><!-- /app -->
 

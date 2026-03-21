@@ -1,7 +1,8 @@
 import Groq from "groq-sdk";
+import { env } from "../config/env.js";
 
 const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY,
+    apiKey: env.groqApiKey,
 });
 
 export const askAI = async ({ systemPrompt, userPrompt, model = "openai/gpt-oss-120b" }) => {

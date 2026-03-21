@@ -42,10 +42,20 @@ export const handleQuery = async (req, res) => {
             let aiText = "";
             try {
                 if (hasMeaningfulData(visaData)) {
-                    aiText = await generateAnswer({ intent, data: visaData, question: query });
+                    aiText = await generateAnswer({
+                        intent,
+                        data: visaData,
+                        question: query,
+                        countryName: targetCountry,
+                    });
                 }
             } catch (aiError) {
-                console.error("AI generation failed:", aiError?.message || aiError);
+                console.error("AI generation failed (visa_info):", {
+                    message: aiError?.message || aiError,
+                    intent,
+                    country: targetCountry,
+                    query: query.slice(0, 160),
+                });
             }
 
             return res.json({
@@ -79,10 +89,20 @@ export const handleQuery = async (req, res) => {
         let aiText = "";
         try {
             if (hasMeaningfulData(profile)) {
-                aiText = await generateAnswer({ intent, data: profile, question: query });
+                aiText = await generateAnswer({
+                    intent,
+                    data: profile,
+                    question: query,
+                    countryName: targetCountry,
+                });
             }
         } catch (aiError) {
-            console.error("AI generation failed:", aiError?.message || aiError);
+            console.error("AI generation failed (guide):", {
+                message: aiError?.message || aiError,
+                intent,
+                country: targetCountry,
+                query: query.slice(0, 160),
+            });
         }
 
         res.json({
