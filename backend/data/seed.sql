@@ -467,6 +467,264 @@ SELECT g.guideline_id, warning_title, warning_desc FROM (
          'Cannabis possession, despite its visible presence in some areas, is illegal and can result in prison sentences.'
 ) AS g(guideline_id, warning_title, warning_desc);
 
+-- Tanzania cultural guidelines
+INSERT IGNORE INTO cultural_guidelines (country_id, dress_code)
+SELECT c.id, 'Conservative dress is essential. In Zanzibar, women must cover shoulders and knees even on the street. Swimwear only at beach resorts.'
+FROM countries c WHERE c.country_code = 'TZ';
+
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.guideline_id, item FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'TZ')) AS gid,
+         'Dress modestly, especially in Zanzibar and Muslim communities' AS item
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'TZ')),
+         'Remove shoes before entering mosques and some homes'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'TZ')),
+         'Greet locals with Habari - Tanzanians appreciate Swahili greetings'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'TZ')),
+         'Book safaris and Kilimanjaro climbs through licensed operators only'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'TZ')),
+         'Carry cash in rural areas - card acceptance is limited'
+) AS g(guideline_id, item);
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.guideline_id, item FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'TZ')) AS gid,
+         'Do not display public affection, especially in Zanzibar' AS item
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'TZ')),
+         'Do not bring or use plastic bags - banned nationwide'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'TZ')),
+         'Do not attempt to climb Kilimanjaro without a licensed guide - it is illegal'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'TZ')),
+         'Do not buy, sell, or transport ivory or wildlife products'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'TZ')),
+         'Do not drink tap water anywhere in Tanzania'
+) AS g(guideline_id, item);
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.guideline_id, warning_title, warning_desc FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'TZ')) AS gid,
+         'Same-Sex Relations' AS warning_title,
+         'Same-sex relationships are criminalised with up to 30 years imprisonment.' AS warning_desc
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'TZ')),
+         'Wildlife Trafficking',
+         'Mandatory minimum 20-year sentence for ivory or rhino horn possession.'
+) AS g(guideline_id, warning_title, warning_desc);
+
+-- Uganda cultural guidelines
+INSERT IGNORE INTO cultural_guidelines (country_id, dress_code)
+SELECT c.id, 'Modest dress required across Uganda. Cover shoulders and knees in rural areas, churches, and mosques. Swimwear only at hotel pools and lakeside resorts.'
+FROM countries c WHERE c.country_code = 'UG';
+
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.guideline_id, item FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'UG')) AS gid,
+         'Get your Yellow Fever vaccination and carry the physical certificate' AS item
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'UG')),
+         'Dress modestly, especially in rural areas and religious sites'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'UG')),
+         'Ask permission before photographing people and communities'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'UG')),
+         'Book gorilla trekking permits well in advance through Uganda Wildlife Authority'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'UG')),
+         'Use registered boda-bodas and always wear the provided helmet'
+) AS g(guideline_id, item);
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.guideline_id, item FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'UG')) AS gid,
+         'Do not enter Uganda without a Yellow Fever certificate - entry will be refused' AS item
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'UG')),
+         'Do not photograph the President''s residence, military, or government buildings'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'UG')),
+         'Do not travel to the DRC border without current security advice'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'UG')),
+         'Do not purchase or possess wildlife products including gorilla souvenirs'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'UG')),
+         'Do not use plastic bags - banned'
+) AS g(guideline_id, item);
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.guideline_id, warning_title, warning_desc FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'UG')) AS gid,
+         'Anti-Homosexuality Act' AS warning_title,
+         'The Anti-Homosexuality Act (2023) imposes severe penalties. LGBTQ+ travellers face serious risk.' AS warning_desc
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'UG')),
+         'Drug Trafficking',
+         'Drug trafficking carries the death penalty in Uganda.'
+) AS g(guideline_id, warning_title, warning_desc);
+
+-- Nigeria cultural guidelines
+INSERT IGNORE INTO cultural_guidelines (country_id, dress_code)
+SELECT c.id, 'Business casual in Lagos and Abuja. Conservative dress in northern Muslim states. Traditional dress is welcomed at cultural events.'
+FROM countries c WHERE c.country_code = 'NG';
+
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.guideline_id, item FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'NG')) AS gid,
+         'Register your arrival with your country''s embassy in Nigeria' AS item
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'NG')),
+         'Use only reputable hotels with security'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'NG')),
+         'Carry Yellow Fever certificate at all times'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'NG')),
+         'Use ATMs inside banks or hotels only'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'NG')),
+         'Respect Islamic customs and prayer times in northern Nigeria'
+) AS g(guideline_id, item);
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.guideline_id, item FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'NG')) AS gid,
+         'Do not travel to northeast Nigeria (Borno, Yobe) - active Boko Haram operations' AS item
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'NG')),
+         'Do not accept drinks or food from strangers'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'NG')),
+         'Do not photograph airports, military, or government buildings'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'NG')),
+         'Do not travel by road between cities at night'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'NG')),
+         'Do not use unregistered taxis in Lagos'
+) AS g(guideline_id, item);
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.guideline_id, warning_title, warning_desc FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'NG')) AS gid,
+         'Same-Sex Relations' AS warning_title,
+         'Same-sex relationships are criminalised - up to 14 years in southern states; death by stoning in some northern states under Sharia law.' AS warning_desc
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'NG')),
+         'Drug Trafficking',
+         'Drug trafficking carries the death penalty.'
+) AS g(guideline_id, warning_title, warning_desc);
+
+-- Ghana cultural guidelines
+INSERT IGNORE INTO cultural_guidelines (country_id, dress_code)
+SELECT c.id, 'Casual but respectful in Accra. Conservative dress in Muslim northern regions. Beach attire only at beach resorts.'
+FROM countries c WHERE c.country_code = 'GH';
+
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.guideline_id, item FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'GH')) AS gid,
+         'Greet people warmly - Ghanaians are known for their friendliness' AS item
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'GH')),
+         'Use the right hand or both hands when giving, receiving, or greeting'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'GH')),
+         'Bargain respectfully at local markets - it is culturally expected'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'GH')),
+         'Visit Cape Coast Castle with respect - it is a deeply significant historical site'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'GH')),
+         'Carry your Yellow Fever certificate - checked at entry'
+) AS g(guideline_id, item);
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.guideline_id, item FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'GH')) AS gid,
+         'Do not use your left hand alone to eat, give, or receive' AS item
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'GH')),
+         'Do not travel to northern border regions with Burkina Faso without security advice'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'GH')),
+         'Do not photograph military, police, or government buildings'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'GH')),
+         'Do not leave valuables unattended on beaches in Accra'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'GH')),
+         'Do not drink tap water - use bottled water'
+) AS g(guideline_id, item);
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.guideline_id, warning_title, warning_desc FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'GH')) AS gid,
+         'Same-Sex Relations' AS warning_title,
+         'Same-sex relationships are illegal. The Human Sexual Rights and Family Values Act (2024) significantly increased penalties.' AS warning_desc
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'GH')),
+         'Drug Offences',
+         'Drug offences carry minimum 5-year imprisonment.'
+) AS g(guideline_id, warning_title, warning_desc);
+
+-- Ethiopia cultural guidelines
+INSERT IGNORE INTO cultural_guidelines (country_id, dress_code)
+SELECT c.id, 'Conservative dress is essential. Women should cover hair, shoulders, and knees when visiting Orthodox churches and mosques. Men should wear long trousers in religious sites.'
+FROM countries c WHERE c.country_code = 'ET';
+
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.guideline_id, item FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'ET')) AS gid,
+         'Apply for your eVisa well in advance - allow at least 1 week' AS item
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'ET')),
+         'Remove shoes when entering churches and mosques - this is mandatory'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'ET')),
+         'Respect religious fasting periods - many restaurants modify menus'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'ET')),
+         'Register with your embassy if staying more than 1 week'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'ET')),
+         'Use authorised forex offices or banks to exchange currency'
+) AS g(guideline_id, item);
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.guideline_id, item FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'ET')) AS gid,
+         'Do not travel to Tigray, Afar, or Amhara regions without security clearance' AS item
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'ET')),
+         'Do not photograph military, government buildings, or airports'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'ET')),
+         'Do not travel by road at night outside Addis Ababa'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'ET')),
+         'Do not engage in political discussions or demonstrations'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'ET')),
+         'Do not drink tap water anywhere in Ethiopia'
+) AS g(guideline_id, item);
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.guideline_id, warning_title, warning_desc FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'ET')) AS gid,
+         'Conflict Zones' AS warning_title,
+         'Travel to Tigray, parts of Amhara and Afar is extremely dangerous. Do not travel to these regions.' AS warning_desc
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'ET')),
+         'Same-Sex Relations',
+         'Same-sex relationships are criminalised with up to 15 years imprisonment.'
+) AS g(guideline_id, warning_title, warning_desc);
+
+-- Senegal cultural guidelines
+INSERT IGNORE INTO cultural_guidelines (country_id, dress_code)
+SELECT c.id, 'Modest dress throughout Senegal. Women should cover shoulders and knees outside beach areas. Swimwear only at designated beach resorts.'
+FROM countries c WHERE c.country_code = 'SN';
+
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.guideline_id, item FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'SN')) AS gid,
+         'Carry your Yellow Fever certificate - mandatory for all travellers' AS item
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'SN')),
+         'Learn a few words in Wolof or French - Jerejef (thank you) is warmly appreciated'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'SN')),
+         'Accept hospitality warmly - Senegalese Teranga culture is built on generosity'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'SN')),
+         'Dress modestly when visiting mosques and rural communities'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'SN')),
+         'Bargain respectfully in markets - it is expected and culturally normal'
+) AS g(guideline_id, item);
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.guideline_id, item FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'SN')) AS gid,
+         'Do not enter a mosque without being invited or welcomed in' AS item
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'SN')),
+         'Do not eat with your left hand - considered disrespectful'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'SN')),
+         'Do not travel to the Casamance region without current security advice'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'SN')),
+         'Do not photograph military, police, or government buildings'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'SN')),
+         'Do not drink tap water - use bottled water'
+) AS g(guideline_id, item);
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.guideline_id, warning_title, warning_desc FROM (
+  SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'SN')) AS gid,
+         'Same-Sex Relations' AS warning_title,
+         'Same-sex relationships are criminalised with up to 5 years imprisonment.' AS warning_desc
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'SN')),
+         'Casamance Landmines',
+         'The Casamance region has unexploded landmines in some rural areas - stick to known paths.'
+) AS g(guideline_id, warning_title, warning_desc);
+
 -- -- HEALTH ADVISORIES -------------------------------------
 INSERT IGNORE INTO health_advisories (country_id, medication_rules, cdc_notice_level)
 SELECT c.id, 'Malaria prophylaxis is strongly recommended for all travellers. Bring adequate supplies of any prescription medication as availability may be limited.', 1
