@@ -376,8 +376,50 @@ function buildHero(c, code) {
 function tile(ico,lbl,val){
   return `<div class="i-tile"><div class="i-ico">${ico}</div><div class="i-lbl">${lbl}</div><div class="i-val">${val}</div></div>`;
 }
-function thCard(lbl, val){
-  return `<div class="th-card"><div class="th-title">${lbl}</div><div class="th-text">${val||'N/A'}</div></div>`;
+function parseTransport(text) {
+  if (!text || text === 'N/A') return '<p style="color:#a0a0b0;">No transport data available.</p>';
+  const categories = [
+    { key: 'International Air', label: 'International Air' },
+    { key: 'International:', label: 'International Air' },
+    { key: 'Road Transport', label: 'Road Transport' },
+    { key: 'Road:', label: 'Road Transport' },
+    { key: 'Intercity Buses', label: 'Intercity Buses' },
+    { key: 'Intercity:', label: 'Intercity Buses' },
+    { key: 'Rideshare / Apps', label: 'Rideshare / Apps' },
+    { key: 'Apps:', label: 'Rideshare / Apps' },
+    { key: 'Rail', label: 'Rail' },
+  ];
+  const rows = {};
+  const parts = text.split(/(?=International[: ]|Road[: ]|Intercity[: ]|Rideshare|Apps:|Rail[: ])/);
+  parts.forEach(part => {
+    const match = categories.find(c => part.trim().startsWith(c.key));
+    if (match) {
+      const val = part.replace(match.key, '').replace(/^[:\s]+/, '').trim();
+      if (val) rows[match.label] = val;
+    }
+  });
+  if (!Object.keys(rows).length) return `<p style="font-size:0.95rem;color:var(--txt-sub);line-height:1.7;">${text}</p>`;
+  return `<table class="info-table"><tbody>${Object.entries(rows).map(([k,v]) =>
+    `<tr><td class="info-table-key">${k}</td><td class="info-table-val">${v}</td></tr>`
+  ).join('')}</tbody></table>`;
+}
+
+function parseHousing(text) {
+  if (!text || text === 'N/A') return '<p style="color:#a0a0b0;">No accommodation data available.</p>';
+  const luxMatch = text.match(/Luxury[^:]*:\s*([^.]+(?:\.[^.]+)*?)(?=Mid-range|Budget|Book|$)/i);
+  const midMatch = text.match(/Mid-range[^:]*:\s*([^.]+(?:\.[^.]+)*?)(?=Budget|Book|Luxury|$)/i);
+  const budMatch = text.match(/Budget[^:]*:\s*([^.]+(?:\.[^.]+)*?)(?=Mid-range|Luxury|Book|$)/i);
+  const tipMatch = text.match(/(?:Book[^.]+\.|Airbnb[^.]+\.|Booking\.com[^.]+\.)/gi);
+  const rows = [
+    luxMatch ? ['Luxury', luxMatch[1].trim()] : null,
+    midMatch ? ['Mid-Range', midMatch[1].trim()] : null,
+    budMatch ? ['Budget', budMatch[1].trim()] : null,
+    tipMatch ? ['Booking Tips', tipMatch.join(' ')] : null,
+  ].filter(Boolean);
+  if (!rows.length) return `<p style="font-size:0.95rem;color:var(--txt-sub);line-height:1.7;">${text}</p>`;
+  return `<table class="info-table"><tbody>${rows.map(([k,v]) =>
+    `<tr><td class="info-table-key">${k}</td><td class="info-table-val">${v}</td></tr>`
+  ).join('')}</tbody></table>`;
 }
 
 function buildOverview(c) {
@@ -394,10 +436,10 @@ function buildOverview(c) {
   ].join(''));
   const transport = c.transportation||c.transport||c.transport_info||'N/A';
   const housing   = c.housing||c.housing_info||'N/A';
-  setEl('d-th', [
-    thCard('Transportation', transport),
-    thCard('Housing', housing),
-  ].join(''));
+  setEl('d-th', `
+    <div class="th-card"><div class="th-title">Transport</div>${parseTransport(transport)}</div>
+    <div class="th-card"><div class="th-title">Accommodation</div>${parseHousing(housing)}</div>
+  `);
   const places = c.places||[];
   setEl('d-strip', places.map(p=>
     `<div class="ps-it"><img src="${safeUrl(p.image||p.img||'')}" alt="${escapeHtml(p.name||'')}" loading="lazy"></div>`
