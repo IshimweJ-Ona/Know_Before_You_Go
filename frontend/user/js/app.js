@@ -9,16 +9,16 @@ let CURRENT_USER = null;
 
 /* ── Unique fallback hero images per country code ── */
 const COUNTRY_IMAGES = {
-  RW: 'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&q=80', // Rwanda gorillas/hills
-  KE: 'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=800&q=80', // Kenya savannah
-  TZ: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800&q=80', // Tanzania Serengeti
-  UG: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=800&q=80', // Uganda landscape
-  NG: 'https://images.unsplash.com/photo-1569060762641-f3dc8b86f8e1?w=800&q=80', // Nigeria Lagos
-  GH: 'https://images.unsplash.com/photo-1614859324967-b4e51c9d9c80?w=800&q=80', // Ghana coast
-  ZA: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=800&q=80', // South Africa Cape Town
-  MA: 'https://images.unsplash.com/photo-1548704606-571c77043fa3?w=800&q=80', // Morocco Marrakech
-  ET: 'https://images.unsplash.com/photo-1589553416260-f586c8f1514f?w=800&q=80', // Ethiopia mountains
-  SN: 'https://images.unsplash.com/photo-1559494007-9f5847c49d94?w=800&q=80', // Senegal coast
+  RW: 'https://www.shiftcities.org/sites/default/files/styles/16_9_extra_large/public/2021-12/51262629802_21efa5b084_k.jpg?itok=UhA25Itj', // Rwanda gorillas/hills
+  KE: 'https://www.do4africa.org/app/uploads/2022/01/Actu3_Kenyacity.png', // Kenya savannah
+  TZ: 'https://assets.micontenthub.com/traveloffers/traveler-editorials/a-guide-to-tanzania-what-to-do-and-where-to-stay/DarEsSalaam_p-LNBmfXF.jpg', // Tanzania Serengeti
+  UG: 'https://www.asiliaafrica.com/wp-content/uploads/2024/04/The-city-skyline-Uganda.jpg', // Uganda landscape
+  NG: 'https://news.delta.com/sites/default/files/styles/node_image_top_960/public/2025-01/adobestock_359316984.jpeg.jpg?itok=JuztjTHe', // Nigeria Lagos
+  GH: 'https://images.unsplash.com/photo-1727023663921-967d01f69c7e?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGdoYW5hfGVufDB8fDB8fHww', // Ghana coast
+  ZA: 'https://images.unsplash.com/photo-1495492429145-2c82ff875f67?q=80&w=2334&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // South Africa Cape Town
+  MA: 'https://www.brookings.edu/wp-content/uploads/2025/03/shutterstock_2527687493.jpg?quality=75', // Morocco Marrakech
+  ET: 'https://images.unsplash.com/photo-1614981816670-3e65f4cfdb28?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGFkZGlzJTIwYWJhYmF8ZW58MHx8MHx8fDA%3D', // Ethiopia mountains
+  SN: 'https://images.unsplash.com/photo-1664887246498-7d729201b1f6?q=80&w=3133&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Senegal coast
 };
 
 /* ── SVG ICONS ── */
@@ -898,7 +898,7 @@ async function sendChat() {
   if (!USER_TOKEN) {
     const messagesDiv = document.getElementById('chat-messages');
     messagesDiv.innerHTML += `<div class="chat-message ai-message">
-      <div class="chat-avatar">🤖</div>
+      <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
       <div class="chat-bubble">Please log in to use the AI chat feature.</div>
     </div>`;
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -913,7 +913,7 @@ async function sendChat() {
 
   // Add user message
   messagesDiv.innerHTML += `<div class="chat-message user-message">
-    <div class="chat-avatar">👤</div>
+    <div class="chat-avatar"><i class="fa-solid fa-user"></i></div>
     <div class="chat-bubble">${escapeHtml(message)}</div>
   </div>`;
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -936,13 +936,13 @@ async function sendChat() {
 
     // Add AI response
     messagesDiv.innerHTML += `<div class="chat-message ai-message">
-      <div class="chat-avatar">🤖</div>
+      <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
       <div class="chat-bubble">${escapeHtml(res.response).replace(/\n/g, '<br>')}</div>
     </div>`;
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   } catch (err) {
     messagesDiv.innerHTML += `<div class="chat-message ai-message">
-      <div class="chat-avatar">🤖</div>
+      <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
       <div class="chat-bubble">Sorry, I couldn't process your question. Please try again.</div>
     </div>`;
   }
@@ -958,7 +958,7 @@ function startNewChat() {
   // Clear messages display
   const messagesDiv = document.getElementById('chat-messages');
   messagesDiv.innerHTML = `<div class="chat-message ai-message">
-    <div class="chat-avatar">🤖</div>
+    <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
     <div class="chat-bubble">
       Hello! I'm your travel assistant. Ask me about visas, health requirements, cultural tips, emergency contacts, or anything else about African destinations. What would you like to know?
     </div>
@@ -970,15 +970,35 @@ function startNewChat() {
 }
 
 function toggleChatHistory() {
-  // For now, just show a placeholder message
   const messagesDiv = document.getElementById('chat-messages');
   messagesDiv.innerHTML += `<div class="chat-message ai-message">
-    <div class="chat-avatar">🤖</div>
+    <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
     <div class="chat-bubble">
       Chat history feature is coming soon! For now, you can start a new chat to clear the conversation.
     </div>
   </div>`;
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function toggleChatSidebar() {
+  const sidebar = document.getElementById('chat-sidebar');
+  if (sidebar) {
+    sidebar.classList.toggle('open');
+  }
+}
+
+function openChat() {
+  document.getElementById('chat-overlay').classList.add('open');
+}
+
+function closeChatBtn() {
+  document.getElementById('chat-overlay').classList.remove('open');
+}
+
+function closeChat(e) {
+  if (e.target === document.getElementById('chat-overlay')) {
+    closeChatBtn();
+  }
 }
 
 function updateChatHeader(c) {
@@ -995,7 +1015,7 @@ async function sendCountryChat() {
   input.value = '';
   const messagesDiv = document.getElementById('chat-messages');
   messagesDiv.innerHTML += `<div class="chat-message user">
-    <div class="chat-avatar">👤</div>
+    <div class="chat-avatar"><i class="fa-solid fa-user"></i></div>
     <div class="chat-bubble">${escapeHtml(message)}</div>
   </div>`;
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -1007,13 +1027,13 @@ async function sendCountryChat() {
     });
     const answer = res.answer || res.response || 'No response';
     messagesDiv.innerHTML += `<div class="chat-message ai">
-      <div class="chat-avatar">🤖</div>
+      <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
       <div class="chat-bubble">${answer.replace(/\n/g, '<br>')}</div>
     </div>`;
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   } catch (err) {
     messagesDiv.innerHTML += `<div class="chat-message ai">
-      <div class="chat-avatar">🤖</div>
+      <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
       <div class="chat-bubble">Sorry, I couldn't process your question. Please try again.</div>
     </div>`;
   }
@@ -1046,15 +1066,19 @@ async function loadAds() {
     const ads = res.ads || [];
     const html = ads.map(a => `
       <div class="ad-item">
-        <img src="${safeUrl(a.image_url || '')}" alt="${escapeHtml(a.title)}" style="max-width:100px;">
-        <h4>${escapeHtml(a.title)}</h4>
-        <p>${escapeHtml(a.description || '')}</p>
-        <a href="${safeUrl(a.link_url || '#') || '#'}">Learn more</a>
+        <div class="ad-img-container">
+          <img src="${safeUrl(a.image_url || '')}" alt="${escapeHtml(a.title)}" loading="lazy">
+        </div>
+        <div class="ad-content">
+          <h4>${escapeHtml(a.title)}</h4>
+          <p>${escapeHtml(a.description || '')}</p>
+          <a href="${safeUrl(a.link_url || '#') || '#'}" class="ad-link" target="_blank" rel="noopener">Learn more</a>
+        </div>
       </div>
     `).join('');
-    setEl('ads-list', html || '<p>No ads available.</p>');
+    setEl('ads-list', html || '<p style="grid-column: 1/-1; text-align: center; color: var(--txt-muted);">No featured offers at the moment.</p>');
   } catch (err) {
-    setEl('ads-list', '<p>Failed to load ads.</p>');
+    setEl('ads-list', '<p style="grid-column: 1/-1; text-align: center; color: var(--accent);">Failed to load offers. Please refresh.</p>');
   }
 }
 

@@ -79,6 +79,11 @@ Option 1: MySQL client
 mysql -u root -p < backend/data/schema.sql
 mysql -u kbyg_user -p ai_db < backend/data/seed.sql
 ```
+OS Version
+```bash
+mysql -u root -p < backend/data/schema.sql
+mysql -u kbyg_user -p -D ai_db < backend/data/seed.sql
+```
 
 Option 2: Run in your MySQL UI using:
 ```
