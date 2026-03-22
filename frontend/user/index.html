@@ -172,10 +172,16 @@
     <!-- DARK HEADER -->
     <nav id="nav">
       <div class="nav-logo">KBYG</div>
-      <div class="nav-right">
+      
+      <!-- MOBILE MENU TOGGLE -->
+      <button class="nav-menu-toggle mobile-only" onclick="toggleMobileMenu()" aria-label="Open Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <div class="nav-right desktop-only">
         <button class="nav-btn" id="login-btn" onclick="openLogin()">Login</button>
-        <button class="nav-btn" id="chat-btn" onclick="openChat()">AI Chat</button>
-        <button class="nav-nl-btn" onclick="openNL()">Subscribe to News</button>        <div id="user-profile" style="display:none;" class="user-profile">
+        <button class="nav-nl-btn" onclick="openNL()">Subscribe to News</button>
+        <div id="user-profile" style="display:none;" class="user-profile">
           <div class="user-avatar" onclick="toggleUserMenu()">
             <span id="user-initials">U</span>
           </div>
@@ -183,8 +189,45 @@
             <div class="user-name" id="user-menu-name">User Name</div>
             <button onclick="logoutUser()" class="user-logout">Logout</button>
           </div>
-        </div>      </div>
+        </div>
+      </div>
     </nav>
+
+    <!-- MOBILE SLIDE MENU (DRAWER) -->
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay" onclick="closeMobileMenu(event)">
+      <div id="mobile-menu" class="mobile-menu">
+        <div class="mobile-menu-header">
+          <div class="nav-logo">KBYG</div>
+          <button class="mobile-menu-close" onclick="closeMobileMenuBtn()" aria-label="Close Menu">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="mobile-menu-body">
+          <button class="mobile-menu-item" onclick="openLogin(); closeMobileMenuBtn()">
+            <i class="fa-solid fa-user"></i> Login / Sign Up
+          </button>
+          <button class="mobile-menu-item" onclick="openChat(); closeMobileMenuBtn()">
+            <i class="fa-solid fa-robot"></i> AI Travel Assistant
+          </button>
+          <button class="mobile-menu-item" onclick="openNL(); closeMobileMenuBtn()">
+            <i class="fa-solid fa-newspaper"></i> Subscribe to News
+          </button>
+          <hr class="mobile-menu-sep">
+          <div id="mobile-user-profile" style="display:none;">
+            <div class="mobile-user-info">
+              <div class="user-avatar"><span id="mobile-user-initials">U</span></div>
+              <div class="user-name" id="mobile-user-name">User Name</div>
+            </div>
+            <button onclick="logoutUser(); closeMobileMenuBtn()" class="mobile-menu-item logout">
+              <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+          </div>
+        </div>
+        <div class="mobile-menu-footer">
+          <p>Know Before You Go &copy; 2026</p>
+        </div>
+      </div>
+    </div>
 
     <!-- HOME VIEW -->
     <div id="home">
@@ -401,14 +444,17 @@
 
   </div><!-- /app -->
 
-  <!-- FLOATING BACK BUTTON -->
-  <button id="float-btn" onclick="goBack()">
-    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    Back to countries
+  <!-- FLOATING BUTTONS -->
+  <button id="float-btn" onclick="goBack()" aria-label="Back to countries">
+    <i class="fa-solid fa-arrow-left"></i>
   </button>
 
-  <script src="js/config.js?v=1.0.3"></script>
-  <script src="js/api.js?v=1.0.3"></script>
-  <script src="js/app.js?v=1.0.3"></script>
+  <button id="chat-float-btn" onclick="openChat()" aria-label="Open AI Travel Assistant">
+    <i class="fa-solid fa-robot"></i>
+  </button>
+
+  <script src="js/config.js?v=1.0.5"></script>
+  <script src="js/api.js?v=1.0.5"></script>
+  <script src="js/app.js?v=1.0.5"></script>
 </body>
 </html> 

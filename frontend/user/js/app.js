@@ -846,24 +846,57 @@ document.addEventListener('keydown', (e) => {
 
 function updateLoginUI() {
   const loginBtn = document.getElementById('login-btn');
-  const chatBtn = document.getElementById('chat-btn');
+  const chatFloatBtn = document.getElementById('chat-float-btn');
   const newsSection = document.getElementById('news-section');
   const userProfile = document.getElementById('user-profile');
+  const mobileUserProfile = document.getElementById('mobile-user-profile');
+  
   if (USER_TOKEN && CURRENT_USER) {
-    loginBtn.style.display = 'none';
-    chatBtn.style.display = 'inline-block';
-    userProfile.style.display = 'block';
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (chatFloatBtn) chatFloatBtn.style.display = 'flex';
+    if (userProfile) userProfile.style.display = 'block';
+    
     const initials = (CURRENT_USER.name || 'U').split(' ').map(n => n[0]).join('').toUpperCase();
-    document.getElementById('user-initials').textContent = initials.slice(0, 2);
-    document.getElementById('user-menu-name').textContent = CURRENT_USER.name || CURRENT_USER.email;
+    const shortInitials = initials.slice(0, 2);
+    
+    setTxt('user-initials', shortInitials);
+    setTxt('user-menu-name', CURRENT_USER.name || CURRENT_USER.email);
+    
+    // Sync to mobile menu
+    if (mobileUserProfile) {
+      mobileUserProfile.style.display = 'block';
+      setTxt('mobile-user-initials', shortInitials);
+      setTxt('mobile-user-name', CURRENT_USER.name || CURRENT_USER.email);
+    }
+    
     if (newsSection) newsSection.style.display = 'block';
   } else {
-    loginBtn.style.display = 'inline-block';
-    loginBtn.textContent = 'Login';
-    loginBtn.onclick = openLogin;
-    chatBtn.style.display = 'none';
-    userProfile.style.display = 'none';
+    if (loginBtn) {
+      loginBtn.style.display = 'inline-block';
+      loginBtn.textContent = 'Login';
+      loginBtn.onclick = openLogin;
+    }
+    if (chatFloatBtn) chatFloatBtn.style.display = 'none';
+    if (userProfile) userProfile.style.display = 'none';
+    if (mobileUserProfile) mobileUserProfile.style.display = 'none';
     if (newsSection) newsSection.style.display = 'none';
+  }
+}
+
+/* ── MOBILE MENU ── */
+function toggleMobileMenu() {
+  const overlay = document.getElementById('mobile-menu-overlay');
+  if (overlay) overlay.classList.toggle('open');
+}
+
+function closeMobileMenuBtn() {
+  const overlay = document.getElementById('mobile-menu-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+function closeMobileMenu(e) {
+  if (e.target === document.getElementById('mobile-menu-overlay')) {
+    closeMobileMenuBtn();
   }
 }
 
