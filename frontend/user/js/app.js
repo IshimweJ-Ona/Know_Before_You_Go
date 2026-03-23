@@ -884,6 +884,7 @@ function updateLoginUI() {
   const loginBtn = document.getElementById('login-nav-btn');
   const chatFloatBtn = document.getElementById('chat-float-btn');
   const newsSection = document.getElementById('news-section');
+  const adsSection = document.getElementById('ads-section');
   const userProfile = document.getElementById('user-profile');
   const mobileUserProfile = document.getElementById('mobile-user-profile');
   
@@ -891,6 +892,7 @@ function updateLoginUI() {
     if (loginBtn) loginBtn.style.display = 'none';
     if (chatFloatBtn) chatFloatBtn.style.display = 'flex';
     if (userProfile) userProfile.style.display = 'block';
+    if (adsSection) adsSection.style.display = 'block';
     
     const initials = (CURRENT_USER.name || 'U').split(' ').map(n => n[0]).join('').toUpperCase();
     const shortInitials = initials.slice(0, 2);
@@ -916,6 +918,7 @@ function updateLoginUI() {
     if (userProfile) userProfile.style.display = 'none';
     if (mobileUserProfile) mobileUserProfile.style.display = 'none';
     if (newsSection) newsSection.style.display = 'none';
+    if (adsSection) adsSection.style.display = 'none';
   }
 }
 
