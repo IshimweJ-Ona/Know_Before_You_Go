@@ -1,57 +1,37 @@
-# KBYG — Know Before You Go
+# KBYG - Know Before You Go
 
-KBYG is a travel intelligence platform with a Node.js backend (Express + MySQL) and a lightweight static frontend. It provides country guides, visa rules, health advisories, cultural guidance, and AI summaries.
+KBYG is a travel intelligence platform with a Node.js backend (Express + MySQL) and static frontends for users and admins. It provides country guides, visa rules, health advisories, emergency contacts, cultural dos and donts, education stats, and AI summaries.
 
-## Quick Overview
-- Backend: `backend/` (Express API + MySQL)
-- Frontend (User): `frontend/user/` (static HTML/CSS/JS)
-- Frontend (Admin): `frontend/admin/` (static HTML/CSS/JS)
-- Docker: `Dockerfile`, `docker-compose.yml`
+Dataset: March 2026 country reference (10 countries, 4 data domains per country).
 
-## Project Structure and File Purpose
-### Backend
-- `backend/main.js`: Entry point that starts the server and optionally runs endpoint checks.
-- `backend/server.js`: Express app wiring, middleware, CORS, rate limiting, static frontend hosting, health endpoints.
+## Admin Credentials (Seeded)
+Use these for admin login:
+- Username/Email: `kybg_tester`
+- Password: `H1ll@`
+- Name: `KBYG Tester`
+
+## Project Structure
+Backend
+- `backend/main.js`: Starts the server and optional endpoint checks.
+- `backend/server.js`: Express app, middleware, CORS, rate limiting, health endpoints.
 - `backend/config/db.js`: MySQL connection pool.
-- `backend/controllers/aiController.js`: AI query endpoint handler (intent + data + AI response).
+- `backend/controllers/aiController.js`: AI query endpoint handler.
 - `backend/controllers/countryController.js`: Country detection endpoint handler.
-- `backend/controllers/v1Controller.js`: Main API logic for countries, visa, health, emergency, admin, assistant, newsletter.
-- `backend/middleware/auth.js`: JWT admin auth guard.
-- `backend/routes/aiRoutes.js`: AI route definitions.
-- `backend/routes/countryRoutes.js`: Country detection route definitions.
-- `backend/routes/v1Routes.js`: Main API routes.
-- `backend/services/countryDetector.js`: Country detection logic.
-- `backend/services/countryIndex.js`: In-memory cache for country name index.
-- `backend/services/knowledgeEngine.js`: Data access layer for country profiles and visa info with memory cache.
-- `backend/services/queryAnalyzer.js`: Basic intent detection.
-- `backend/services/ragService.js`: AI prompting and memory cache for AI responses.
-- `backend/services/responseFormatter.js`: Formats country and visa data into UI-friendly sections.
-- `backend/utils/detectCountry.js`: Lightweight helper for single-country detection.
+- `backend/controllers/v1Controller.js`: Core API routes (countries, visa, health, emergency, admin, assistant, newsletter).
+- `backend/middleware/auth.js`: JWT + session token auth guard.
+- `backend/services/*`: Country detection, query analysis, RAG, response formatting.
 - `backend/data/schema.sql`: Database schema.
 - `backend/data/seed.sql`: Seed data.
-- `backend/.env`: Backend environment configuration (API keys, DB config).
 
-### Frontend
-- `frontend/user/index.html`: User-facing UI.
-- `frontend/user/js/config.js`: API base URL configuration.
-- `frontend/user/js/api.js`: Fetch helper.
-- `frontend/user/js/app.js`: UI logic for listing and viewing countries.
+Frontend
+- `frontend/user/index.html`: User UI.
+- `frontend/user/js/app.js`: User UI logic.
 - `frontend/user/css/main.css`: User UI styling.
-- `frontend/admin/index.html`: Admin dashboard UI.
-- `frontend/admin/js/admin.js`: Admin UI logic (login, tables, edit).
-- `frontend/admin/css/admin.css`: Admin UI styling.
+- `frontend/admin/index.html`: Admin UI.
+- `frontend/admin/js/admin.js`: Admin login and admin tools.
 
-### Root
-- `Dockerfile`: Container for backend and static frontend.
-- `docker-compose.yml`: Compose file for backend + MySQL.
-- `.env`: Compose environment values for MySQL.
-
-## Requirements (Local)
-- Node.js 18+
-- MySQL 8+
-
-## Environment Setup (Local)
-Update `backend/.env`:
+## Local Environment (.env)
+Create `backend/.env`:
 ```
 GROQ_API_KEY=your_key
 DB_HOST=localhost
@@ -60,47 +40,89 @@ DB_PASSWORD=kbyg_password
 DB_NAME=ai_db
 DB_PORT=3306
 JWT_SECRET=your_secret
-ADMIN_SETUP_TOKEN=your_first_admin_token
+ADMIN_INVITE_EMAILS=kybg_tester,admin@kbyg.com
 AI_CACHE_TTL_SECONDS=21600
+EXTERNAL_SOURCES_TTL_SECONDS=21600
 ```
 
-## Database Setup (Local)
-
-### Create Database and User 
-To run these comands in MYSQL shell(as root):
+## Database Setup
+### Create Database and User (MySQL)
+Run these commands in MySQL (as root):
 ```bash
 CREATE DATABASE IF NOT EXISTS ai_db;
 CREATE USER IF NOT EXISTS 'kbyg_user'@'localhost' IDENTIFIED BY 'kbyg_password';
 GRANT ALL PRIVILEGES ON ai_db.* TO 'kbyg_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
-Option 1: MySQL client
+
+### Seed the Schema and Data
+Option 1 - MySQL client:
 ```bash
 mysql -u root -p < backend/data/schema.sql
 mysql -u kbyg_user -p ai_db < backend/data/seed.sql
 ```
-OS Version
-```bash
-mysql -u root -p < backend/data/schema.sql
-mysql -u kbyg_user -p -D ai_db < backend/data/seed.sql
-```
 
-Option 2: Run in your MySQL UI using:
+Option 2 - MySQL UI:
 ```
 SOURCE backend/data/schema.sql;
 SOURCE backend/data/seed.sql;
 ```
 
-## Start Locally (Windows / macOS / Linux)
+## Setup on Windows (Detailed)
+1. Install Node.js 18+ (LTS).
+2. Install MySQL 8+ (or use Docker).
+3. Clone the repo and open the project root.
+4. Create `backend/.env` using the example above.
+5. Create the database and user (MySQL shell):
+   - Use the commands in the Database Setup section.
+6. Seed the database:
+   - Run the `mysql` commands from the Seed section.
+7. Install backend dependencies:
 ```bash
 cd backend
 npm install
+```
+8. Run the backend:
+```bash
 npm run dev
 ```
-Base URL: `http://localhost:5000`
+9. Open the app:
+- Backend API: `http://localhost:5000`
+- User UI: open `frontend/user/index.html`
+- Admin UI: open `frontend/admin/index.html`
 
-## Start with Docker (Windows / macOS / Linux)
-1. Update the root `.env` (used by Docker Compose):
+## Setup on macOS (Detailed)
+1. Install Node.js 18+ (LTS) using Homebrew:
+```bash
+brew install node
+```
+2. Install MySQL 8+ (or use Docker):
+```bash
+brew install mysql
+brew services start mysql
+```
+3. Clone the repo and open the project root.
+4. Create `backend/.env` using the example above.
+5. Create the database and user (MySQL shell):
+   - Use the commands in the Database Setup section.
+6. Seed the database:
+   - Run the `mysql` commands from the Seed section.
+7. Install backend dependencies:
+```bash
+cd backend
+npm install
+```
+8. Run the backend:
+```bash
+npm run dev
+```
+9. Open the app:
+- Backend API: `http://localhost:5000`
+- User UI: open `frontend/user/index.html`
+- Admin UI: open `frontend/admin/index.html`
+
+## Docker Setup (Windows or macOS)
+1. Update root `.env` (for Docker Compose):
 ```
 MYSQL_ROOT_PASSWORD=change_me_root_password
 DB_NAME=ai_db
@@ -108,172 +130,47 @@ DB_USER=kbyg_user
 DB_PASSWORD=kbyg_password
 ```
 
-2. Build and run containers:
+2. Build and run:
 ```bash
 docker pull mysql:8.4
 docker pull node:20
 docker compose up --build
 ```
 
-The MySQL container automatically runs `backend/data/schema.sql` and `backend/data/seed.sql` on first boot.
+The MySQL container initializes from `backend/data/schema.sql` and `backend/data/seed.sql` on first boot.
 
-## Team Startup Guide (Step-by-step)
-1. Install Docker Desktop and make sure Docker Engine is running.
-2. Pull the repo and open the project root.
-3. Update the root `.env` with your MySQL credentials.
-4. Start everything:
-```bash
-docker compose up --build
-```
-5. Open the app:
-   - Backend: `http://localhost:5000`
-   - MySQL: `localhost:333`
-6. Stop containers when done:
-```bash
-docker compose down
-```
+## Admin Access Flow
+- Admin signup does not use a setup token in the URL.
+- Access is controlled by:
+  - `admin_invites` table (seeded), or
+  - `ADMIN_INVITE_EMAILS` in `backend/.env`.
+- When an admin logs in or signs up, the backend generates a JWT and a session token. The frontend stores the token and uses it in the `Authorization: Bearer <token>` header for admin requests.
 
-## Finding Docker Images
-If you need images, open a web browser and go to Docker Hub.
-Search for `mysql` to see available tags and documentation.
+## API Endpoints (Base URL: http://localhost:5000)
+AI Query
+- `POST /api/ai/query`
 
-## Docker Troubleshooting
-If Docker fails during build or startup, these commands help you inspect and clean up.
+Countries
+- `GET /api/v1/countries`
+- `GET /api/v1/countries/:code`
+- `GET /api/v1/countries/:code/assistant`
 
-Show running containers:
-```bash
-docker ps
-```
+Visa
+- `GET /api/v1/visa/:code`
 
-Show all containers (including stopped):
-```bash
-docker ps -a
-```
+Health
+- `GET /api/v1/health/:code`
 
-Show all images:
-```bash
-docker images
-```
+Emergency
+- `GET /api/v1/emergency/:code`
 
-Stop and remove containers + network (keeps named volumes):
-```bash
-docker compose down
-```
-This stops services and removes containers and the default compose network.
+Cultural Dos and Donts
+- `GET /api/v1/dosDonts/:code`
 
-Stop and remove containers + network + volumes:
-```bash
-docker compose down -v
-```
-This does everything `docker compose down` does, plus deletes volumes (your MySQL data volume), which forces a fresh database init next time.
-
-
-Remove a specific container by name:
-```bash
-docker rm -f ai_chat-backend
-```
-This force-removes the `ai_chat-backend` container if it is stuck or you want a clean rebuild.
-
-
-Remove a specific image container by name:
-```bash
-docker rmi -f ai_chat-backend:latest
-```
-
-## Health Endpoints
-- `GET /health` → basic process health
-- `GET /ready` → checks DB connectivity
-
-## API Endpoints
-Base: `http://localhost:5000`
-
-### Country detection
-`POST /api/countries/detect`
-```bash
-curl -X POST http://localhost:5000/api/countries/detect \
-  -H "Content-Type: application/json" \
-  -d "{\"query\":\"Emergency numbers in Kenya\"}"
-```
-
-### AI Query
-`POST /api/ai/query`
-```bash
-curl -X POST http://localhost:5000/api/ai/query \
-  -H "Content-Type: application/json" \
-  -d "{\"query\":\"Visa requirements for Rwanda\"}"
-```
-
-### Countries
-`GET /api/v1/countries`
-```bash
-curl http://localhost:5000/api/v1/countries
-```
-
-`GET /api/v1/countries/:code`
-```bash
-curl http://localhost:5000/api/v1/countries/RW
-```
-
-`GET /api/v1/countries/:code/assistant`
-```bash
-curl http://localhost:5000/api/v1/countries/RW/assistant
-```
-
-### Visa
-`GET /api/v1/visa/:code`
-```bash
-curl http://localhost:5000/api/v1/visa/RW
-```
-
-### Health
-`GET /api/v1/health/:code`
-```bash
-curl http://localhost:5000/api/v1/health/RW
-```
-
-### Emergency
-`GET /api/v1/emergency/:code`
-```bash
-curl http://localhost:5000/api/v1/emergency/RW
-```
-
-### Cultural Dos & Don'ts
-`GET /api/v1/dosDonts/:code`
-```bash
-curl http://localhost:5000/api/v1/dosDonts/RW
-```
-
-### Newsletter Subscribe
-`POST /api/v1/newsletter`
-```bash
-curl -X POST http://localhost:5000/api/v1/newsletter \
-  -H "Content-Type: application/json" \
-  -d "{\"email\":\"test@example.com\",\"name\":\"Traveler\"}"
-```
-
-## Postman Testing
-1. Set environment variable `baseUrl` = `http://localhost:5000`.
-2. Create requests using the endpoint paths above.
-3. For admin endpoints, login first:
-   - `POST /api/v1/admin/login` → get token
-   - Use header `Authorization: Bearer <token>` for admin routes.
-
-## Admin Setup (First Admin)
-For the very first admin account:
-```
-POST /api/v1/admin
-Headers: x-setup-token: <ADMIN_SETUP_TOKEN>
-Body:
-{
-  "email": "admin@example.com",
-  "password": "StrongPassword!",
-  "full_name": "Admin Name"
-}
-```
-
-After the first admin is created, only existing admins can create more.
+Newsletter
+- `POST /api/v1/newsletter`
 
 ## Notes
-- Memory caching is enabled by default for AI responses and country bundles.
-- Change `AI_CACHE_TTL_SECONDS` to control AI cache expiration.
+- AI responses are cached. Adjust `AI_CACHE_TTL_SECONDS` to control cache duration.
+- External trusted sources are cached. Adjust `EXTERNAL_SOURCES_TTL_SECONDS` for refresh frequency.
 - Update `CORS_ORIGINS` in `backend/.env` for production.
