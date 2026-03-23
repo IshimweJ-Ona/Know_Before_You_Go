@@ -1,6 +1,7 @@
 const INTENT_RULES = [
     { intent: "visa_info", patterns: ["visa", "entry", "evisa", "visa on arrival"] },
     { intent: "emergency_numbers", patterns: ["emergency", "police", "ambulance", "fire"] },
+    { intent: "health", patterns: ["health", "vaccine", "vaccination", "malaria", "disease", "outbreak", "cdc"] },
     { intent: "airport_info", patterns: ["airport", "airports", "iata", "terminal"] },
     { intent: "currency_info", patterns: ["currency", "exchange", "rate", "fx", "convert"] },
     { intent: "transportation", patterns: ["transport", "transportation", "taxi", "bus", "uber", "ride"] },

@@ -1,0 +1,9 @@
+import crypto from "crypto";
+
+export const generateSessionToken = () => {
+    return crypto.randomBytes(32).toString("hex");
+};
+
+export const hashSessionToken = (token) => {
+    return crypto.createHash("sha256").update(String(token || "")).digest("hex");
+};

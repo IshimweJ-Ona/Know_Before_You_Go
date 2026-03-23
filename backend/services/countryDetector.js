@@ -32,15 +32,25 @@ const pickOriginDestination = (text, mentions) => {
 };
 
 export const detectCountries = async (text) => {
-    const { countries, countrySet, countryByLower } = await getCountryIndex();
+    const { countries, countrySet, countryByLower, countryRegex } = await getCountryIndex();
     const normalizedText = (text || "").toLowerCase();
     const tokens = tokenize(text);
 
     const mentions = [];
-    for (const name of countries) {
-        const key = name.toLowerCase();
-        if (normalizedText.includes(key)) {
-            mentions.push(name);
+    if (countryRegex) {
+        const matches = normalizedText.match(countryRegex) || [];
+        for (const match of matches) {
+            const canonical = countryByLower.get(match);
+            if (canonical && !mentions.includes(canonical)) {
+                mentions.push(canonical);
+            }
+        }
+    } else {
+        for (const name of countries) {
+            const key = name.toLowerCase();
+            if (normalizedText.includes(key)) {
+                mentions.push(name);
+            }
         }
     }
 

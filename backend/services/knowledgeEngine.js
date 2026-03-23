@@ -1,7 +1,7 @@
 import pool from "../config/db.js";
 import { createMemoryCache } from "../utils/memoryCache.js";
 
-const getCountryByName = async (name) => {
+export const getCountryByName = async (name) => {
     const [rows] = await pool.query(
         `SELECT id, country_code, country_name, region, capital, currency, language, population,
                 power_voltage, timezone, tipping, climate, description, transportation, housing,

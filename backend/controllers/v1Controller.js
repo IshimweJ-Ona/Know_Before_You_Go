@@ -2,6 +2,13 @@ import pool from "../config/db.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { generateAnswer } from "../services/ragService.js";
+import { evaluateQueryPolicy, buildPolicyRefusal } from "../services/aiPolicy.js";
+import { fetchEducationStatsCached } from "../services/educationStatsService.js";
+import { detectCountries } from "../services/countryDetector.js";
+import { analyzeQuery } from "../services/queryAnalyzer.js";
+import { fetchCountryProfileCached, fetchVisaInfoCached } from "../services/knowledgeEngine.js";
+import { fetchExternalEnrichment } from "../services/externalSources.js";
+import { generateSessionToken, hashSessionToken } from "../utils/sessionToken.js";
 
 const hasMeaningfulData = (payload) => {
     if (!payload) return false;
@@ -100,6 +107,33 @@ const getAssistantCache = (key) => assistantCache.get(key);
 const setAssistantCache = (key, value) => assistantCache.set(key, value);
 const getBundleCache = (key) => bundleCache.get(key);
 const setBundleCache = (key, value) => bundleCache.set(key, value);
+
+const issueSessionToken = async (userId) => {
+    const raw = generateSessionToken();
+    const hashed = hashSessionToken(raw);
+    await pool.query("UPDATE users SET session_token_hash = ? WHERE id = ?", [hashed, userId]);
+    return raw;
+};
+
+const isAdminInviteAllowed = async (email) => {
+    const allowList = (process.env.ADMIN_INVITE_EMAILS || "")
+        .split(",")
+        .map((value) => value.trim().toLowerCase())
+        .filter(Boolean);
+    if (allowList.length && allowList.includes(email)) {
+        return { allowed: true, source: "env" };
+    }
+    try {
+        const [rows] = await pool.query(
+            "SELECT id FROM admin_invites WHERE email = ? AND is_active = 1 AND used_at IS NULL LIMIT 1",
+            [email]
+        );
+        const invite = rows[0];
+        return invite ? { allowed: true, source: "db", inviteId: invite.id } : { allowed: false };
+    } catch {
+        return { allowed: false };
+    }
+};
 
 const fetchCountryBundle = async (code) => {
     const country = await fetchCountryByCode(code);
@@ -320,10 +354,12 @@ export const createNewsletter = async (req, res) => {
     if (!email) return res.status(400).json({ message: "Email is required." });
     if (!password) return res.status(400).json({ message: "Password is required." });
     try {
+        const sessionToken = generateSessionToken();
+        const sessionHash = hashSessionToken(sessionToken);
         const hashedPassword = await bcrypt.hash(password, 10);
         await pool.query(
-            "INSERT IGNORE INTO users (email, full_name, role, password_hash, source) VALUES (?, ?, 'subscriber', ?, ?)",
-            [email.trim().toLowerCase(), name || null, hashedPassword, "frontend"]
+            "INSERT IGNORE INTO users (email, full_name, role, password_hash, source, session_token_hash) VALUES (?, ?, 'subscriber', ?, ?, ?)",
+            [email.trim().toLowerCase(), name || null, hashedPassword, "frontend", sessionHash]
         );
         res.status(200).json({ success: true });
     } catch (error) {
@@ -361,38 +397,24 @@ export const createAdmin = async (req, res) => {
         return res.status(400).json({ message: "Email and password are required." });
     }
     try {
-        const setupToken = process.env.ADMIN_SETUP_TOKEN;
-        const headerToken = req.headers["x-setup-token"];
-        const [countRows] = await pool.query(
-            "SELECT COUNT(*) AS count FROM users WHERE role = 'admin'"
-        );
-        const adminCount = countRows[0]?.count || 0;
-
-        if (adminCount > 0) {
-            const header = req.headers.authorization || "";
-            const token = header.startsWith("Bearer ") ? header.slice(7) : null;
-            if (!token || !process.env.JWT_SECRET) {
-                return res.status(403).json({ message: "Admin authorization required." });
-            }
-            try {
-                const payload = jwt.verify(token, process.env.JWT_SECRET);
-                if (payload?.role !== "admin") {
-                    return res.status(403).json({ message: "Admin authorization required." });
-                }
-            } catch {
-                return res.status(403).json({ message: "Admin authorization required." });
-            }
-        } else {
-            if (!setupToken || headerToken !== setupToken) {
-                return res.status(403).json({ message: "Setup token required for first admin." });
-            }
+        const normalizedEmail = email.trim().toLowerCase();
+        const inviteCheck = await isAdminInviteAllowed(normalizedEmail);
+        if (!inviteCheck.allowed) {
+            return res.status(403).json({ message: "Admin signup is restricted." });
         }
 
         const password_hash = await bcrypt.hash(password, 10);
+        const sessionToken = generateSessionToken();
+        const sessionHash = hashSessionToken(sessionToken);
         await pool.query(
-            "INSERT INTO users (email, full_name, password_hash, role) VALUES (?, ?, ?, ?)",
-            [email.trim().toLowerCase(), full_name || null, password_hash, role || "admin"]
+            "INSERT INTO users (email, full_name, password_hash, role, session_token_hash) VALUES (?, ?, ?, ?, ?)",
+            [normalizedEmail, full_name || null, password_hash, role || "admin", sessionHash]
         );
+        if (inviteCheck.source === "db" && inviteCheck.inviteId) {
+            await pool.query("UPDATE admin_invites SET used_at = NOW() WHERE id = ?", [
+                inviteCheck.inviteId,
+            ]);
+        }
         res.status(201).json({ success: true });
     } catch (error) {
         if (error?.code === "ER_DUP_ENTRY") {
@@ -422,8 +444,9 @@ export const loginAdmin = async (req, res) => {
         const ok = await bcrypt.compare(password, admin.password_hash || "");
         if (!ok) return res.status(401).json({ message: "Invalid credentials." });
 
+        const sessionToken = await issueSessionToken(admin.id);
         const token = jwt.sign(
-            { id: admin.id, email: admin.email, role: admin.role },
+            { id: admin.id, email: admin.email, role: admin.role, st: sessionToken },
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
@@ -484,9 +507,11 @@ export const signupSubscriber = async (req, res) => {
     }
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
+        const sessionToken = generateSessionToken();
+        const sessionHash = hashSessionToken(sessionToken);
         await pool.query(
-            "INSERT INTO users (email, full_name, role, password_hash) VALUES (?, ?, 'subscriber', ?)",
-            [email.trim().toLowerCase(), full_name.trim(), hashedPassword]
+            "INSERT INTO users (email, full_name, role, password_hash, session_token_hash) VALUES (?, ?, 'subscriber', ?, ?)",
+            [email.trim().toLowerCase(), full_name.trim(), hashedPassword, sessionHash]
         );
         res.status(201).json({ message: "Subscriber account created successfully." });
     } catch (error) {
@@ -518,8 +543,9 @@ export const loginSubscriber = async (req, res) => {
         const ok = await bcrypt.compare(password, user.password_hash || "");
         if (!ok) return res.status(401).json({ message: "Invalid credentials." });
 
+        const sessionToken = await issueSessionToken(user.id);
         const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.role },
+            { id: user.id, email: user.email, role: user.role, st: sessionToken },
             process.env.JWT_SECRET,
             { expiresIn: "30d" }
         );
@@ -605,12 +631,58 @@ export const aiChat = async (req, res) => {
         return res.status(400).json({ message: "Message is required." });
     }
     try {
+        const policy = evaluateQueryPolicy(message);
+        if (!policy.allowed) {
+            return res.status(200).json({ response: buildPolicyRefusal(policy.reason) });
+        }
+
+        const intent = analyzeQuery(message);
+        const { origin, destination, mentions } = await detectCountries(message);
+        const targetCountry = destination || origin || mentions?.[0];
+
+        let educationStats = null;
+        if (policy.wantsEducationStats && targetCountry) {
+            try {
+                educationStats = await fetchEducationStatsCached({ countryName: targetCountry });
+            } catch {
+                educationStats = null;
+            }
+        }
+
+        if (!targetCountry) {
+            return res.status(200).json({
+                response: "Please include a country name so I can provide accurate information from our database.",
+            });
+        }
+
+        let data = null;
+        if (intent === "visa_info") {
+            const visaData = await fetchVisaInfoCached({ countryName: targetCountry });
+            const external = await fetchExternalEnrichment({
+                intent,
+                countryName: targetCountry,
+                countryCode: visaData?.country?.country_code,
+            });
+            data = external ? { ...visaData, external_sources: external } : visaData;
+        } else {
+            const profile = await fetchCountryProfileCached(targetCountry);
+            const external = await fetchExternalEnrichment({
+                intent,
+                countryName: targetCountry,
+                countryCode: profile?.country?.country_code,
+            });
+            data = educationStats
+                ? { ...profile, education_stats: educationStats, external_sources: external }
+                : { ...profile, external_sources: external };
+        }
+
         const userPrompt = history ? `${history}\nUser: ${message}` : `User: ${message}`;
 
         const response = await generateAnswer({
-            intent: "general_guide",
-            data: {},
+            intent,
+            data: hasMeaningfulData(data) ? data : { country: { country_name: targetCountry } },
             question: userPrompt,
+            countryName: targetCountry,
         });
 
         const text = typeof response === "string" ? response : response?.answer || "";

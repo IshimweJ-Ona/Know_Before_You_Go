@@ -204,8 +204,8 @@ FROM countries c WHERE c.country_code = 'SN';
 
 -- -- VISA REQUIREMENTS -------------------------------------
 INSERT IGNORE INTO visa_requirements (country_id, visa_status, visa_free_days, visa_title, visa_info)
-SELECT c.id, 'Visa on Arrival', 30, 'Visa on Arrival',
-       'Citizens of most countries can obtain a 30-day visa on arrival at Kigali International Airport. East African Community members enter visa-free. Rwanda also accepts an eVisa applied online before travel.'
+SELECT c.id, 'eVisa or Visa on Arrival', 30, 'eVisa / Visa on Arrival',
+       'Most nationalities require a visa. eVisa or Visa on Arrival available. eVisa portal: https://irembo.gov.rw/rolportal/en/web/minema/e-visa. Passport must be valid 6+ months beyond entry. Maximum stay: 30 days (extendable to 90 days). EAC citizens enter visa-free. Entry rules: return/onward ticket required; Yellow Fever certificate required if arriving from an endemic country. Fees: USD 50 single-entry / USD 70 multiple-entry. eVisa processing ~72 hours.'
 FROM countries c WHERE c.country_code = 'RW';
 
 INSERT IGNORE INTO visa_requirements (country_id, visa_status, visa_free_days, visa_title, visa_info)
@@ -255,11 +255,11 @@ FROM countries c WHERE c.country_code = 'SN';
 
 -- -- EMERGENCY CONTACTS ------------------------------------
 INSERT IGNORE INTO emergency_contacts (country_id, police_number, ambulance_number, fire_number, general_emergency, tourist_police)
-SELECT c.id, '112', '912', '111', '112', '3512'
+SELECT c.id, '112', '912', '111', '112', '+250 788 311 155'
 FROM countries c WHERE c.country_code = 'RW';
 
 INSERT IGNORE INTO emergency_contacts (country_id, police_number, ambulance_number, fire_number, general_emergency, tourist_police)
-SELECT c.id, '999', '999', '999', '112', '0800 723 715'
+SELECT c.id, '999', '999', '999', '999', '0800 723 715'
 FROM countries c WHERE c.country_code = 'KE';
 
 INSERT IGNORE INTO emergency_contacts (country_id, police_number, ambulance_number, fire_number, general_emergency, tourist_police)
@@ -267,7 +267,7 @@ SELECT c.id, '112', '112', '114', '112', '0800 110 003'
 FROM countries c WHERE c.country_code = 'TZ';
 
 INSERT IGNORE INTO emergency_contacts (country_id, police_number, ambulance_number, fire_number, general_emergency, tourist_police)
-SELECT c.id, '999', '999', '999', '112', '0800 199 699'
+SELECT c.id, '999', '999', '999', '999', '0800 199 699'
 FROM countries c WHERE c.country_code = 'UG';
 
 INSERT IGNORE INTO emergency_contacts (country_id, police_number, ambulance_number, fire_number, general_emergency, tourist_police)
@@ -287,16 +287,27 @@ SELECT c.id, '19', '15', '15', '112', '0537 20 13 00'
 FROM countries c WHERE c.country_code = 'MA';
 
 INSERT IGNORE INTO emergency_contacts (country_id, police_number, ambulance_number, fire_number, general_emergency, tourist_police)
-SELECT c.id, '991', '907', '939', '112', '011 551 0666'
+SELECT c.id, '991', '907', '939', '991', '011 551 0666'
 FROM countries c WHERE c.country_code = 'ET';
 
 INSERT IGNORE INTO emergency_contacts (country_id, police_number, ambulance_number, fire_number, general_emergency, tourist_police)
 SELECT c.id, '17', '15', '18', '112', '33 869 25 00'
 FROM countries c WHERE c.country_code = 'SN';
 
+-- -- ADMIN INVITES ---------------------------------------
+INSERT IGNORE INTO admin_invites (email, is_active, created_by)
+VALUES
+  ('admin@kbyg.com', 1, 'seed'),
+  ('kybg_tester', 1, 'seed');
+
+-- -- ADMIN USER ------------------------------------------
+INSERT IGNORE INTO users (email, full_name, role, password_hash, is_active, source)
+VALUES
+  ('kybg_tester', 'KBYG Tester', 'admin', '$2b$10$yqDyizbcMS5nOWef1FLUuOGLCJSqYxjIn7LhCE/lSRO/IL6OJwDvu', 1, 'seed');
+
 -- -- CULTURAL GUIDELINES -----------------------------------
 INSERT IGNORE INTO cultural_guidelines (country_id, dress_code)
-SELECT c.id, 'Smart casual is appropriate in cities. Cover shoulders and knees when visiting churches.'
+SELECT c.id, 'Smart casual is acceptable in Kigali. Modest dress (covered shoulders and knees) required in rural areas, churches, and government offices. Beachwear only at lakeside resorts.'
 FROM countries c WHERE c.country_code = 'RW';
 
 INSERT IGNORE INTO cultural_guidelines (country_id, dress_code)
@@ -315,29 +326,37 @@ FROM countries c WHERE c.country_code = 'MA';
 INSERT IGNORE INTO cultural_dos (guideline_id, item)
 SELECT g.guideline_id, item FROM (
   SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')) AS gid,
-         'Carry your passport or ID at all times' AS item
+         'Carry your national ID or passport at all times - police checks are common' AS item
   UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
-         'Remove shoes before entering homes'
+         'Participate respectfully in Umuganda on the last Saturday of each month (roads close 8am-11am)'
   UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
-         'Use both hands when giving or receiving items'
+         'Dress modestly outside Kigali and when visiting churches or rural communities'
   UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
-         'Participate in Umuganda (community service) if present on the last Saturday of each month'
+         'Greet elders with both hands when shaking - a sign of respect'
   UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
-         'Ask permission before photographing people'
+         'Ask permission before photographing people, especially in rural areas'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
+         'Use designated bins - Rwanda takes littering seriously'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
+         'Carry small cash (Rwandan Franc) - not all vendors accept cards'
 ) AS g(guideline_id, item);
 
 INSERT IGNORE INTO cultural_donts (guideline_id, item)
 SELECT g.guideline_id, item FROM (
   SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')) AS gid,
-         'Do not bring or use plastic bags - they are banned' AS item
+         'Do not bring plastic bags - they are banned at entry points' AS item
   UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
-         'Do not litter - Rwanda takes cleanliness very seriously'
+         'Do not photograph military installations, government buildings, or border posts'
   UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
-         'Avoid photographing government buildings and military installations'
+         'Do not litter - fines are strictly enforced'
   UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
-         'Do not smoke in public spaces'
+         'Do not discuss the 1994 genocide insensitively'
   UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
-         'Avoid discussing the 1994 genocide casually'
+         'Do not buy or sell wildlife products'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
+         'Do not use your left hand alone to give or receive items'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
+         'Do not assume all roads are open during Umuganda morning hours'
 ) AS g(guideline_id, item);
 
 INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
@@ -346,8 +365,14 @@ SELECT g.guideline_id, warning_title, warning_desc FROM (
          'Plastic Bag Ban' AS warning_title,
          'Importing, selling, or using plastic bags is illegal. Customs will confiscate them on arrival.' AS warning_desc
   UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
-         'Genocide Denial',
-         'Denying, minimising, or trivialising the 1994 genocide against the Tutsi is a criminal offence.'
+         'LGBTQ+ Discretion',
+         'Same-sex relationships are not explicitly criminalised, but travellers should exercise discretion.'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
+         'Drug Offences',
+         'Drug offences carry heavy penalties including lengthy imprisonment.'
+  UNION ALL SELECT (SELECT id FROM cultural_guidelines WHERE country_id = (SELECT id FROM countries WHERE country_code = 'RW')),
+         'Government Criticism',
+         'Publicly criticising the government or President can result in arrest.'
 ) AS g(guideline_id, warning_title, warning_desc);
 
 -- Kenya dos/donts/legal
@@ -727,7 +752,7 @@ SELECT g.guideline_id, warning_title, warning_desc FROM (
 
 -- -- HEALTH ADVISORIES -------------------------------------
 INSERT IGNORE INTO health_advisories (country_id, medication_rules, cdc_notice_level)
-SELECT c.id, 'Malaria prophylaxis is strongly recommended for all travellers. Bring adequate supplies of any prescription medication as availability may be limited.', 1
+SELECT c.id, 'Carry a copy of all prescriptions. Antimalarials and most travel medications are available in Kigali pharmacies. Malaria prophylaxis is recommended. Drink bottled or boiled water; tap water is treated but bottled water is safer for visitors.', 1
 FROM countries c WHERE c.country_code = 'RW';
 
 INSERT IGNORE INTO health_advisories (country_id, medication_rules, cdc_notice_level)
@@ -803,10 +828,12 @@ FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country
 INSERT IGNORE INTO health_recommended_vaccines (advisory_id, vaccine)
 SELECT v.advisory_id, vaccine FROM (
   SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW') AS aid, 'Hepatitis A' AS vaccine
+  UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW'), 'Hepatitis B'
   UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW'), 'Typhoid'
   UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW'), 'Malaria prophylaxis'
-  UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW'), 'Rabies (for long-term stays)'
+  UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW'), 'Rabies (for extended rural stays)'
   UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW'), 'Meningitis'
+  UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW'), 'Routine vaccinations (MMR, Tetanus, Polio)'
 ) AS v(advisory_id, vaccine);
 
 INSERT IGNORE INTO health_risks (advisory_id, risk)
@@ -814,7 +841,13 @@ SELECT r.advisory_id, risk FROM (
   SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW') AS aid, 'Malaria' AS risk
   UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW'), 'Cholera'
   UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW'), 'Typhoid'
+  UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW'), 'Bilharzia (schistosomiasis) in Lake Kivu'
 ) AS r(advisory_id, risk);
+
+INSERT IGNORE INTO health_active_outbreaks (advisory_id, outbreak)
+SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'RW') AS aid,
+       'Monitor CDC/WHO for Ebola updates near the DRC border'
+FROM dual;
 
 INSERT IGNORE INTO health_recommended_vaccines (advisory_id, vaccine)
 SELECT v.advisory_id, vaccine FROM (
@@ -964,6 +997,761 @@ SELECT r.advisory_id, risk FROM (
   UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'SN'), 'Dengue'
   UNION ALL SELECT (SELECT a2.id FROM health_advisories a2 JOIN countries c2 ON a2.country_id = c2.id WHERE c2.country_code = 'SN'), 'Cholera'
 ) AS r(advisory_id, risk);
+
+-- ---------------------------------------------------------------------------
+-- DOC OVERRIDES (March 2026) - Visa, Emergency, Dress Code
+-- ---------------------------------------------------------------------------
+
+-- Visa details
+UPDATE visa_requirements v JOIN countries c ON v.country_id = c.id
+SET v.visa_status = 'eTA Required',
+    v.visa_free_days = 90,
+    v.visa_title = 'Electronic Travel Authorisation (eTA)',
+    v.visa_info = 'eTA required for most nationalities (replaced visa system in 2024). Apply at https://etakenya.go.ke. Passport valid 6+ months. Maximum stay 90 days. EAC citizens and some Commonwealth nationals are visa-free. Entry rules: eTA before travel, return/onward ticket, Yellow Fever certificate if arriving from endemic country. Cost USD 30. Processing ~72 hours.'
+WHERE c.country_code = 'KE';
+
+UPDATE visa_requirements v JOIN countries c ON v.country_id = c.id
+SET v.visa_status = 'eVisa Required',
+    v.visa_free_days = 90,
+    v.visa_title = 'eVisa (Online)',
+    v.visa_info = 'eVisa required for most nationalities. Apply at https://eservices.immigration.go.tz. Passport valid 6+ months. Maximum stay 90 days. EAC citizens have visa-free access. Entry rules: eVisa before travel, return ticket, Yellow Fever certificate if arriving from endemic country. Cost USD 50 single entry. Processing 3-5 business days.'
+WHERE c.country_code = 'TZ';
+
+UPDATE visa_requirements v JOIN countries c ON v.country_id = c.id
+SET v.visa_status = 'eVisa Required',
+    v.visa_free_days = 90,
+    v.visa_title = 'eVisa / East Africa Tourist Visa',
+    v.visa_info = 'eVisa required for most nationalities. Apply at https://visas.immigration.go.ug. Passport valid 6+ months. Maximum stay 90 days. Entry rules: eVisa before travel, Yellow Fever certificate mandatory for all travellers. East Africa Tourist Visa (Kenya/Uganda/Rwanda) USD 100. Single entry USD 50. Processing 3-5 business days.'
+WHERE c.country_code = 'UG';
+
+UPDATE visa_requirements v JOIN countries c ON v.country_id = c.id
+SET v.visa_status = 'Visa Required',
+    v.visa_free_days = 90,
+    v.visa_title = 'eVisa / Visa on Arrival',
+    v.visa_info = 'Visa required for most nationalities. eVisa or visa on arrival for eligible countries. Portal: https://immigration.gov.ng/visa-on-arrival/. Passport valid 6+ months. Maximum stay 90 days (varies). ECOWAS citizens visa-free for 90 days. Entry rules: return/onward travel, sufficient funds, Yellow Fever certificate mandatory. Processing 5-10 business days.'
+WHERE c.country_code = 'NG';
+
+UPDATE visa_requirements v JOIN countries c ON v.country_id = c.id
+SET v.visa_status = 'Visa Required',
+    v.visa_free_days = 60,
+    v.visa_title = 'eVisa / Visa on Arrival',
+    v.visa_info = 'Visa required for most non-ECOWAS nationals. eVisa portal: https://evisa.gov.gh. Passport valid 6+ months. Maximum stay 60 days (extendable). ECOWAS citizens visa-free for 90 days. Entry rules: return/onward ticket, Yellow Fever certificate mandatory. Cost USD 30-50. Processing 2-5 business days.'
+WHERE c.country_code = 'GH';
+
+UPDATE visa_requirements v JOIN countries c ON v.country_id = c.id
+SET v.visa_status = 'Visa Free',
+    v.visa_free_days = 90,
+    v.visa_title = 'Visa-free Entry',
+    v.visa_info = 'Most nationalities receive 90-day visa-free entry. Passport must be valid 30+ days beyond departure and have 2 blank pages. Proof of onward/return travel and sufficient funds may be required. Minors must carry full birth certificate and parental consent if travelling with one parent or alone. Official source: https://www.dha.gov.za'
+WHERE c.country_code = 'ZA';
+
+UPDATE visa_requirements v JOIN countries c ON v.country_id = c.id
+SET v.visa_status = 'Visa Free',
+    v.visa_free_days = 90,
+    v.visa_title = 'Visa-free Entry',
+    v.visa_info = 'Most nationalities receive 90-day visa-free entry. Passport valid 6+ months. Entry rules: return/onward ticket, sufficient funds, accommodation proof may be requested. Official source: https://www.diplomatie.ma'
+WHERE c.country_code = 'MA';
+
+UPDATE visa_requirements v JOIN countries c ON v.country_id = c.id
+SET v.visa_status = 'eVisa Required',
+    v.visa_free_days = 90,
+    v.visa_title = 'eVisa (Online)',
+    v.visa_info = 'eVisa required for most nationalities. Apply at https://www.evisa.gov.et. Passport valid 6+ months. Maximum stay 30 days (single entry) or 90 days (multiple entry). Yellow Fever certificate required if arriving from endemic country. Return ticket required. Cost USD 52 single entry. Processing 3 business days.'
+WHERE c.country_code = 'ET';
+
+UPDATE visa_requirements v JOIN countries c ON v.country_id = c.id
+SET v.visa_status = 'Visa Free',
+    v.visa_free_days = 90,
+    v.visa_title = 'Visa-free Entry',
+    v.visa_info = 'Most nationalities receive 90-day visa-free entry. Passport valid 6+ months. Entry rules: return/onward ticket, sufficient funds, Yellow Fever certificate required. Official source: https://www.diplomatie.sn'
+WHERE c.country_code = 'SN';
+
+-- Emergency contacts
+UPDATE emergency_contacts e JOIN countries c ON e.country_id = c.id
+SET e.police_number = '999 or 112',
+    e.ambulance_number = '999 or 112',
+    e.fire_number = '999 or 112',
+    e.general_emergency = '112',
+    e.tourist_police = '+254 20 604 767'
+WHERE c.country_code = 'KE';
+
+UPDATE emergency_contacts e JOIN countries c ON e.country_id = c.id
+SET e.police_number = '112 or 999',
+    e.ambulance_number = '112',
+    e.fire_number = '114',
+    e.general_emergency = '112',
+    e.tourist_police = '+255 22 211 5047'
+WHERE c.country_code = 'TZ';
+
+UPDATE emergency_contacts e JOIN countries c ON e.country_id = c.id
+SET e.police_number = '999 or 112',
+    e.ambulance_number = '999 or 112',
+    e.fire_number = '999 or 112',
+    e.general_emergency = '112',
+    e.tourist_police = '+256 414 233 222'
+WHERE c.country_code = 'UG';
+
+UPDATE emergency_contacts e JOIN countries c ON e.country_id = c.id
+SET e.police_number = '199 or 112',
+    e.ambulance_number = '199 or 112',
+    e.fire_number = '199 or 112',
+    e.general_emergency = '112',
+    e.tourist_police = '+234 803 309 2194'
+WHERE c.country_code = 'NG';
+
+UPDATE emergency_contacts e JOIN countries c ON e.country_id = c.id
+SET e.police_number = '191 or 112',
+    e.ambulance_number = '193 or 112',
+    e.fire_number = '192 or 112',
+    e.general_emergency = '112',
+    e.tourist_police = '+233 30 222 3355'
+WHERE c.country_code = 'GH';
+
+UPDATE emergency_contacts e JOIN countries c ON e.country_id = c.id
+SET e.police_number = '10111 or 112',
+    e.ambulance_number = '10177 or 112',
+    e.fire_number = '10177 or 112',
+    e.general_emergency = '112',
+    e.tourist_police = '0860 010 111'
+WHERE c.country_code = 'ZA';
+
+UPDATE emergency_contacts e JOIN countries c ON e.country_id = c.id
+SET e.police_number = '19 or 112',
+    e.ambulance_number = '15 or 112',
+    e.fire_number = '15 or 112',
+    e.general_emergency = '112',
+    e.tourist_police = '+212 5224-84601'
+WHERE c.country_code = 'MA';
+
+UPDATE emergency_contacts e JOIN countries c ON e.country_id = c.id
+SET e.police_number = '991 or 112',
+    e.ambulance_number = '907 or 112',
+    e.fire_number = '939 or 112',
+    e.general_emergency = '991',
+    e.tourist_police = '+251 11 551 7788'
+WHERE c.country_code = 'ET';
+
+UPDATE emergency_contacts e JOIN countries c ON e.country_id = c.id
+SET e.police_number = '17 or 112',
+    e.ambulance_number = '15 or 112',
+    e.fire_number = '18 or 112',
+    e.general_emergency = '112',
+    e.tourist_police = '+221 33 869 2232'
+WHERE c.country_code = 'SN';
+
+-- Dress codes
+UPDATE cultural_guidelines g JOIN countries c ON g.country_id = c.id
+SET g.dress_code = 'Casual in Nairobi and major cities. Modest dress required in coastal Muslim areas and when visiting mosques. Safari-appropriate neutral colours recommended in national parks.'
+WHERE c.country_code = 'KE';
+
+UPDATE cultural_guidelines g JOIN countries c ON g.country_id = c.id
+SET g.dress_code = 'Conservative dress across Tanzania. In Zanzibar, women should cover shoulders and knees; men avoid sleeveless tops outside beach areas. Swimwear only at beach resorts and hotel pools.'
+WHERE c.country_code = 'TZ';
+
+UPDATE cultural_guidelines g JOIN countries c ON g.country_id = c.id
+SET g.dress_code = 'Modest dress required across Uganda. Cover shoulders and knees in rural areas, churches, and mosques. Swimwear only at hotel pools and lakeside resorts.'
+WHERE c.country_code = 'UG';
+
+UPDATE cultural_guidelines g JOIN countries c ON g.country_id = c.id
+SET g.dress_code = 'Business casual to smart in Lagos and Abuja. Conservative dress in northern states; women cover hair, arms, and legs. Traditional dress is welcomed at cultural events.'
+WHERE c.country_code = 'NG';
+
+UPDATE cultural_guidelines g JOIN countries c ON g.country_id = c.id
+SET g.dress_code = 'Casual but respectful in Accra and coastal areas. Conservative dress in Muslim northern regions. Traditional kente cloth is welcomed at cultural events. Beach attire only at beach resorts.'
+WHERE c.country_code = 'GH';
+
+UPDATE cultural_guidelines g JOIN countries c ON g.country_id = c.id
+SET g.dress_code = 'Relaxed and cosmopolitan. Business casual in city centres. Beach attire at coastal areas. Smart casual for restaurants. Conservative dress when visiting traditional communities.'
+WHERE c.country_code = 'ZA';
+
+UPDATE cultural_guidelines g JOIN countries c ON g.country_id = c.id
+SET g.dress_code = 'Women should cover shoulders and knees in medinas and rural areas; head covering recommended in mosques. Men should avoid shorts in religious areas. Beachwear only at resort beaches.'
+WHERE c.country_code = 'MA';
+
+UPDATE cultural_guidelines g JOIN countries c ON g.country_id = c.id
+SET g.dress_code = 'Conservative dress throughout Ethiopia. Women cover hair, shoulders, and knees at religious sites. Men wear long trousers in churches and mosques.'
+WHERE c.country_code = 'ET';
+
+UPDATE cultural_guidelines g JOIN countries c ON g.country_id = c.id
+SET g.dress_code = 'Modest dress throughout Senegal. Women cover shoulders and knees outside beach areas. Men avoid sleeveless tops. Swimwear only at designated beach resorts.'
+WHERE c.country_code = 'SN';
+
+-- Advisory levels (from March 2026 doc)
+UPDATE countries SET advisory_level = 2 WHERE country_code = 'KE';
+UPDATE countries SET advisory_level = 2 WHERE country_code = 'TZ';
+UPDATE countries SET advisory_level = 2 WHERE country_code = 'UG';
+UPDATE countries SET advisory_level = 3 WHERE country_code = 'NG';
+UPDATE countries SET advisory_level = 2 WHERE country_code = 'GH';
+UPDATE countries SET advisory_level = 2 WHERE country_code = 'ZA';
+UPDATE countries SET advisory_level = 2 WHERE country_code = 'MA';
+UPDATE countries SET advisory_level = 3 WHERE country_code = 'ET';
+UPDATE countries SET advisory_level = 2 WHERE country_code = 'SN';
+
+-- Cultural dos/donts/legal warnings (March 2026 doc)
+DELETE cd FROM cultural_dos cd
+JOIN cultural_guidelines g ON cd.guideline_id = g.id
+JOIN countries c ON g.country_id = c.id
+WHERE c.country_code IN ('KE','TZ','UG','NG','GH','ZA','MA','ET','SN');
+
+DELETE cd FROM cultural_donts cd
+JOIN cultural_guidelines g ON cd.guideline_id = g.id
+JOIN countries c ON g.country_id = c.id
+WHERE c.country_code IN ('KE','TZ','UG','NG','GH','ZA','MA','ET','SN');
+
+DELETE clw FROM cultural_legal_warnings clw
+JOIN cultural_guidelines g ON clw.guideline_id = g.id
+JOIN countries c ON g.country_id = c.id
+WHERE c.country_code IN ('KE','TZ','UG','NG','GH','ZA','MA','ET','SN');
+
+-- Kenya
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.id, 'Obtain your eTA at https://etakenya.go.ke before flying - airlines will deny boarding without it'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Carry a printed or digital copy of your eTA confirmation at all times' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Use registered taxis or Uber/Bolt in Nairobi - do not hail unmarked vehicles' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Bargain respectfully at markets - haggling is expected and part of the culture' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Respect wildlife at all times in national parks - keep inside vehicles and maintain safe distances' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Dress modestly when visiting mosques, especially along the coast (Mombasa, Lamu)' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Greet people in Swahili - Jambo (hello) and Asante (thank you) are warmly received' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE';
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.id, 'Do not travel to border areas with Somalia, South Sudan, or Ethiopia without specific security advice'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Do not photograph police officers, military personnel, or government buildings without permission' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Do not use plastic bags - banned nationwide since 2017, fines up to KES 4 million' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Do not feed or approach wildlife in national parks' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Do not accept rides from strangers or unlicensed vehicles, especially at night' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Do not carry or use recreational drugs - severe penalties apply' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Do not drink tap water outside of major hotels - use bottled water' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE';
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.id, 'Plastic Bag Ban', 'Importing or using plastic bags is illegal and can result in heavy fines.'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Same-Sex Relations', 'Same-sex relationships are criminalised - travellers should exercise extreme caution.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Wildlife Trafficking', 'Wildlife trafficking carries a minimum 5-year prison sentence.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT g.id, 'Corruption', 'Do not offer bribes to police officers - it is illegal and increasingly prosecuted.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'KE';
+
+-- Tanzania
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.id, 'Apply for your eVisa well in advance at https://eservices.immigration.go.tz'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Dress very modestly in Zanzibar and all Muslim communities - strongly expected' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Remove shoes before entering mosques and some traditional homes' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Greet locals with Habari - Tanzanians appreciate Swahili greetings' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Book safaris and Kilimanjaro climbs through licensed operators only' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Carry cash (Tanzanian Shilling or USD) in rural areas - card acceptance is limited' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Respect local customs around photography - always ask first' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ';
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.id, 'Do not display affection publicly, especially in Zanzibar'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Do not photograph without permission - especially in Muslim communities' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Do not bring or use plastic bags - banned nationwide' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Do not attempt to climb Kilimanjaro without a licensed guide - it is illegal and dangerous' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Do not travel to the Mozambique border area without current security advice' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Do not buy, sell, or transport ivory or wildlife products - severe prison sentences apply' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Do not drink tap water - bottled water is essential throughout Tanzania' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ';
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.id, 'Same-Sex Relations', 'Same-sex relationships are criminalised with penalties up to 30 years imprisonment.'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Wildlife Trafficking', 'Mandatory minimum 20-year sentence for ivory or rhino horn possession.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Drug Offences', 'Drug offences carry life imprisonment or death penalty in serious cases.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT g.id, 'Zanzibar Laws', 'Zanzibar has its own more conservative laws and cultural expectations than mainland Tanzania.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'TZ';
+
+-- Uganda
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.id, 'Get your Yellow Fever vaccination and carry the physical certificate - it is checked at entry'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Apply for the East Africa Tourist Visa if visiting Kenya and Rwanda in the same trip' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Dress modestly, especially in rural areas and when visiting religious sites' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Ask permission before photographing people, especially in traditional communities and near Bwindi forest' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Book gorilla trekking permits well in advance through the Uganda Wildlife Authority' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Use registered boda-bodas and always wear the provided helmet' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Exchange money at banks or authorised forex bureaux - street exchange is risky' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG';
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.id, 'Do not enter Uganda without a Yellow Fever certificate - entry will be refused'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Do not photograph the President''s residence, military, or government buildings' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Do not travel to the Democratic Republic of Congo border without current security advice' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Do not engage in any same-sex conduct - it is criminalised with severe penalties' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Do not purchase or possess wildlife products including gorilla souvenirs' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Do not use plastic bags - banned' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Do not drink tap water - use bottled water throughout Uganda' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG';
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.id, 'Anti-Homosexuality Act (2023)', 'Severe penalties including the death penalty in some cases - travellers face serious risk.'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Yellow Fever Certificate', 'Yellow Fever certificate is a legal entry requirement - not optional.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Drug Trafficking', 'Drug trafficking carries the death penalty.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT g.id, 'Bribery', 'Bribery of officials is illegal - do not offer money to police or border officers.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'UG';
+
+-- Nigeria
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.id, 'Register your arrival with your country''s embassy or high commission'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Use only reputable hotels with security - avoid budget accommodation in unfamiliar areas' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Hire a trusted local guide or driver - locals know which areas are safe' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Carry Yellow Fever certificate at all times - checked at airports and sometimes inland' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Use ATMs inside banks or hotels - street ATMs have higher skimming risk' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Respect Islamic customs and prayer times in northern Nigeria' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Keep valuables secured and avoid displaying expensive items in public' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG';
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.id, 'Do not travel to northeast Nigeria (Borno, Yobe, Adamawa) - active Boko Haram/ISWAP operations'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Do not travel to the Niger Delta without specific security clearance' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Do not accept drinks or food from strangers - drug-facilitated robbery reported' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Do not photograph airports, military installations, or government buildings' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Do not use unregistered yellow buses or motorcycle taxis in Lagos' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Do not engage in cryptocurrency or advance-fee fraud schemes' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Do not travel at night by road between cities - armed robbery risk on intercity highways' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG';
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.id, 'Same-Sex Relations', 'Same-sex relationships are criminalised - up to 14 years imprisonment in southern states; death by stoning in some northern states under Sharia law.'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Drug Trafficking', 'Drug trafficking carries the death penalty.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Cybercrime Laws', 'Cybercrime laws are broadly worded - be careful about social media posts critical of the government.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT g.id, 'Currency Regulations', 'Declare large amounts of foreign currency at entry.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'NG';
+
+-- Ghana
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.id, 'Enjoy Ghana with normal precautions - one of West Africa''s most stable and tourist-friendly countries'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Use the official eVisa portal before travelling - visa on arrival is possible but eVisa is smoother' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Carry your Yellow Fever certificate - checked at entry' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Greet people warmly - Ghanaians appreciate polite interaction' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Use the right hand or both hands when giving, receiving, or greeting' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Bargain respectfully at local markets - culturally expected' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Visit Cape Coast Castle with respect - deeply significant memorial site' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH';
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.id, 'Do not use your left hand alone to eat, give, or receive - it is culturally disrespectful'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Do not photograph military installations, police stations, or government buildings without permission' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Do not travel to northern border regions with Burkina Faso without current security advice' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Do not buy or sell wildlife products' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Do not carry or use drugs - penalties are severe' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Do not drink tap water - use bottled water' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Do not leave valuables unattended on beaches in Accra' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH';
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.id, 'Same-Sex Relations', 'Same-sex relationships are illegal. The Human Sexual Rights and Family Values Act (2024) increased penalties.'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Drug Offences', 'Drug offences carry minimum 5-year imprisonment.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Cybercrime Laws', 'Laws prohibit spreading false news - be careful with social media content.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT g.id, 'Cultural Artefacts', 'Export of undeclared antiques or cultural artefacts is prohibited.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'GH';
+
+-- South Africa
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.id, 'Be security-conscious - high crime rates in urban areas'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Use e-hailing apps (Uber, Bolt) rather than hailing taxis on the street' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Keep car doors locked and windows up when driving in cities, especially at traffic lights' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Store valuables in hotel safes - do not leave anything visible in parked cars' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Carry copies of your passport and visa - leave originals in the hotel safe' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Visit national parks for world-class wildlife experiences' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Tip service staff 10-15 percent - expected in restaurants' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA';
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.id, 'Do not walk alone at night in Johannesburg CBD, Cape Town CBD, or Durban beachfront'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Do not display expensive jewellery, cameras, or phones in public' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Do not stop for strangers gesturing about car trouble on highways - common robbery technique' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Do not exchange money on the street' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Do not drink and drive - zero tolerance enforced' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Do not approach wildlife in game reserves on foot without a licensed ranger' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Do not travel to Cape Flats, Alexandra, Hillbrow, or Umlazi without a local guide' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA';
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.id, 'LGBTQ+ Rights', 'Same-sex relationships are legal and constitutional rights are protected.'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Cannabis', 'Decriminalised for personal use in private - public use and sale remain illegal.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Road Safety', 'One of the world''s highest road fatality rates - drive defensively.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT g.id, 'Minors Travel Rule', 'Children under 18 must carry a full birth certificate; parental consent required if travelling with one parent or alone.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ZA';
+
+-- Morocco
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.id, 'Dress modestly - Morocco is a Muslim-majority country and conservative dress is respected in medinas'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Accept mint tea when offered - refusing hospitality is considered impolite' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Bargain in souks - expected and part of the shopping experience' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Learn a few basic French or Darija phrases - locals appreciate the effort' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Respect prayer times - businesses may close briefly during the 5 daily prayers' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Use licensed guides in medinas - unofficial guides often lead to commission shops' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Visit the hammam (traditional bathhouse) for a cultural experience' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA';
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.id, 'Do not display public affection between couples - illegal in public and will cause offence'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Do not eat, drink, or smoke in public during Ramadan daylight hours - illegal and disrespectful' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Do not photograph people without permission, especially women in medinas' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Do not accept invitations to private homes from strangers in tourist areas - common scam' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Do not buy or sell kif (cannabis) - illegal for tourists' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Do not wear revealing clothing in medinas, mosques, or rural areas' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Do not enter mosques unless specifically open to non-Muslims' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA';
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.id, 'Public Affection', 'Public displays of affection between unmarried couples are illegal.'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Ramadan Rules', 'Eating or drinking in public during Ramadan daylight hours is illegal.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Same-Sex Relations', 'Same-sex relationships are criminalised - penalties up to 3 years imprisonment.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT g.id, 'Royal Criticism', 'Criticising the King or royal family is a serious criminal offence.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'MA';
+
+-- Ethiopia
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.id, 'Apply for your eVisa well in advance - allow at least 1 week'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Carry your Yellow Fever certificate if arriving from an endemic country' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Dress conservatively when visiting Orthodox churches and monasteries' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Remove shoes when entering churches and mosques - mandatory' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Respect religious fasting periods - many restaurants modify menus' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Register with your embassy upon arrival if staying more than 1 week' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Use authorised forex offices or banks - unofficial exchanges are illegal' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET';
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.id, 'Do not travel to Tigray, Afar, Amhara, or Somali regions without current security clearance'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Do not photograph military installations, government buildings, airports, or defence infrastructure' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Do not photograph people without permission, especially in traditional communities' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Do not travel by road at night outside Addis Ababa' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Do not engage in political discussions or demonstrations' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Do not drink tap water anywhere in Ethiopia - use bottled water' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Do not carry or use drugs - severe penalties apply' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET';
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.id, 'Conflict Zones', 'Travel to conflict zones is extremely dangerous - do not travel to Tigray and parts of Amhara and Afar.'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Same-Sex Relations', 'Same-sex relationships are criminalised - up to 15 years imprisonment.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Anti-Terrorism Law', 'Broadly worded law - journalists and researchers should seek legal advice.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT g.id, 'Currency Regulations', 'Do not exchange money on the black market - illegal and risky.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'ET';
+
+-- Senegal
+INSERT IGNORE INTO cultural_dos (guideline_id, item)
+SELECT g.id, 'Carry your Yellow Fever certificate - mandatory for all travellers entering Senegal'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Learn a few words in Wolof or French - Jerejef (thank you) is appreciated' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Accept hospitality warmly - Senegalese Teranga culture is built on generosity' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Dress modestly when visiting mosques and rural communities' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Use authorised money changers or banks - street exchange is risky' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Visit Goree Island with respect - a significant UNESCO World Heritage site' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Bargain respectfully in markets - culturally normal' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN';
+
+INSERT IGNORE INTO cultural_donts (guideline_id, item)
+SELECT g.id, 'Do not enter a mosque without being invited or welcomed in'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Do not eat with your left hand - considered disrespectful' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Do not travel to the Casamance region without current security advice' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Do not photograph military, police, or government buildings without permission' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Do not drink tap water - use bottled water' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Do not carry or use drugs - severe penalties apply' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Do not display excessive wealth or flash expensive items in public in Dakar' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN';
+
+INSERT IGNORE INTO cultural_legal_warnings (guideline_id, title, description)
+SELECT g.id, 'Same-Sex Relations', 'Same-sex relationships are criminalised - up to 5 years imprisonment.'
+FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Drug Offences', 'Drug offences carry minimum 2-year imprisonment.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Presidential Palace', 'Photographing the Presidential Palace or military is illegal.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT g.id, 'Casamance Landmines', 'The Casamance region has unexploded landmines in some rural areas - stick to known paths.' FROM cultural_guidelines g JOIN countries c ON g.country_id = c.id WHERE c.country_code = 'SN';
+
+-- Health advisories (March 2026 doc)
+DELETE hr FROM health_required_vaccines hr
+JOIN health_advisories a ON hr.advisory_id = a.id
+JOIN countries c ON a.country_id = c.id
+WHERE c.country_code IN ('RW','KE','TZ','UG','NG','GH','ZA','MA','ET','SN');
+
+DELETE hr FROM health_recommended_vaccines hr
+JOIN health_advisories a ON hr.advisory_id = a.id
+JOIN countries c ON a.country_id = c.id
+WHERE c.country_code IN ('RW','KE','TZ','UG','NG','GH','ZA','MA','ET','SN');
+
+DELETE hr FROM health_risks hr
+JOIN health_advisories a ON hr.advisory_id = a.id
+JOIN countries c ON a.country_id = c.id
+WHERE c.country_code IN ('RW','KE','TZ','UG','NG','GH','ZA','MA','ET','SN');
+
+DELETE hr FROM health_active_outbreaks hr
+JOIN health_advisories a ON hr.advisory_id = a.id
+JOIN countries c ON a.country_id = c.id
+WHERE c.country_code IN ('RW','KE','TZ','UG','NG','GH','ZA','MA','ET','SN');
+
+UPDATE health_advisories a JOIN countries c ON a.country_id = c.id
+SET a.medication_rules = 'Carry a copy of all prescriptions. Antimalarials and most travel medications available in Kigali pharmacies. Water safety: drink bottled or boiled water; tap water in Kigali is treated but bottled water is safer.'
+WHERE c.country_code = 'RW';
+
+UPDATE health_advisories a JOIN countries c ON a.country_id = c.id
+SET a.medication_rules = 'Carry prescriptions for all medications. Antimalarials available in major pharmacies. Bring sufficient supply of specialist medications. Water safety: do not drink tap water; use sealed bottled water.'
+WHERE c.country_code = 'KE';
+
+UPDATE health_advisories a JOIN countries c ON a.country_id = c.id
+SET a.medication_rules = 'Bring full supply of prescription medications; specialist drugs may not be available outside Dar es Salaam. Carry prescriptions in original packaging. Water safety: tap water is unsafe; use sealed bottled water.'
+WHERE c.country_code = 'TZ';
+
+UPDATE health_advisories a JOIN countries c ON a.country_id = c.id
+SET a.medication_rules = 'Bring all medications from home; specialist drugs unavailable outside Kampala. Antimalarials available in Kampala pharmacies. Water safety: do not drink tap water; use sealed bottled water.'
+WHERE c.country_code = 'UG';
+
+UPDATE health_advisories a JOIN countries c ON a.country_id = c.id
+SET a.medication_rules = 'Carry prescriptions for all medications. Counterfeit medications are a known problem - use reputable pharmacies in major hospitals. Water safety: tap water is unsafe; use sealed bottled water.'
+WHERE c.country_code = 'NG';
+
+UPDATE health_advisories a JOIN countries c ON a.country_id = c.id
+SET a.medication_rules = 'Bring full supply of medications. Antimalarials available in Accra pharmacies. Counterfeit drugs present in street markets - use hospital pharmacies. Water safety: tap and sachet water are unsafe; drink sealed bottled water.'
+WHERE c.country_code = 'GH';
+
+UPDATE health_advisories a JOIN countries c ON a.country_id = c.id
+SET a.medication_rules = 'Full range of medications available; major pharmacy chains in all cities. Prescriptions required for controlled substances. Water safety: tap water safe in major cities; in rural areas use bottled water.'
+WHERE c.country_code = 'ZA';
+
+UPDATE health_advisories a JOIN countries c ON a.country_id = c.id
+SET a.medication_rules = 'Good range of medications available in pharmacies (green cross). Prescriptions required for antibiotics and controlled medications. Water safety: bottled water recommended; essential in rural/desert areas.'
+WHERE c.country_code = 'MA';
+
+UPDATE health_advisories a JOIN countries c ON a.country_id = c.id
+SET a.medication_rules = 'Bring full supply of medications from home. Limited pharmaceutical availability outside Addis Ababa. Antimalarials available in the capital. Water safety: tap water unsafe; use sealed bottled water.'
+WHERE c.country_code = 'ET';
+
+UPDATE health_advisories a JOIN countries c ON a.country_id = c.id
+SET a.medication_rules = 'Antimalarials and basic medications available in Dakar pharmacies. Bring specialist medications from home. Water safety: tap water unsafe; use sealed bottled water and avoid ice and raw salads.'
+WHERE c.country_code = 'SN';
+
+-- Required vaccines
+INSERT IGNORE INTO health_required_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Yellow Fever (if arriving from endemic country)'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'RW';
+
+INSERT IGNORE INTO health_required_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Yellow Fever (if arriving from endemic country)'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE';
+
+INSERT IGNORE INTO health_required_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Yellow Fever (required from endemic countries)'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ';
+
+INSERT IGNORE INTO health_required_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Yellow Fever - mandatory for all travellers'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG';
+
+INSERT IGNORE INTO health_required_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Yellow Fever - mandatory for all travellers'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG';
+
+INSERT IGNORE INTO health_required_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Yellow Fever - mandatory for all travellers'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH';
+
+INSERT IGNORE INTO health_required_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Yellow Fever (only if arriving from endemic country)'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ZA';
+
+-- Morocco: none required
+
+INSERT IGNORE INTO health_required_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Yellow Fever (required if arriving from endemic country)'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET';
+
+INSERT IGNORE INTO health_required_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Yellow Fever - mandatory for all travellers'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN';
+
+-- Recommended vaccines
+INSERT IGNORE INTO health_recommended_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'RW'
+UNION ALL SELECT a.id, 'Hepatitis B' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'RW'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'RW'
+UNION ALL SELECT a.id, 'Rabies (for extended rural stays)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'RW'
+UNION ALL SELECT a.id, 'Meningitis' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'RW'
+UNION ALL SELECT a.id, 'Routine vaccinations (MMR, Tetanus, Polio)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'RW';
+
+INSERT IGNORE INTO health_recommended_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT a.id, 'Hepatitis B' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT a.id, 'Cholera' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT a.id, 'Rabies (for rural or wildlife areas)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT a.id, 'Meningitis' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT a.id, 'Routine vaccinations (MMR, Tetanus, Polio)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE';
+
+INSERT IGNORE INTO health_recommended_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT a.id, 'Hepatitis B' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT a.id, 'Rabies' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT a.id, 'Cholera' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT a.id, 'Meningitis' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT a.id, 'Routine vaccinations (MMR, Tetanus, Polio)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ';
+
+INSERT IGNORE INTO health_recommended_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT a.id, 'Hepatitis B' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT a.id, 'Rabies (especially for wildlife areas)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT a.id, 'Meningitis' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT a.id, 'Cholera' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT a.id, 'Routine vaccinations (MMR, Tetanus, Polio)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG';
+
+INSERT IGNORE INTO health_recommended_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT a.id, 'Hepatitis B' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT a.id, 'Meningitis (especially for northern regions)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT a.id, 'Rabies' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT a.id, 'Cholera' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT a.id, 'Routine vaccinations (MMR, Tetanus, Polio)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG';
+
+INSERT IGNORE INTO health_recommended_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT a.id, 'Hepatitis B' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT a.id, 'Meningitis' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT a.id, 'Rabies' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT a.id, 'Cholera' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT a.id, 'Routine vaccinations (MMR, Tetanus, Polio)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH';
+
+INSERT IGNORE INTO health_recommended_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT a.id, 'Hepatitis B' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT a.id, 'Rabies (for rural or wildlife areas)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT a.id, 'Routine vaccinations (MMR, Tetanus, Polio)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ZA';
+
+INSERT IGNORE INTO health_recommended_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT a.id, 'Hepatitis B' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT a.id, 'Rabies (for rural areas)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT a.id, 'Routine vaccinations (MMR, Tetanus, Polio)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'MA';
+
+INSERT IGNORE INTO health_recommended_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT a.id, 'Hepatitis B' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT a.id, 'Meningitis' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT a.id, 'Rabies' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT a.id, 'Cholera' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT a.id, 'Routine vaccinations (MMR, Tetanus, Polio)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET';
+
+INSERT IGNORE INTO health_recommended_vaccines (advisory_id, vaccine)
+SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT a.id, 'Hepatitis B' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT a.id, 'Meningitis' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT a.id, 'Rabies' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT a.id, 'Cholera' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT a.id, 'Routine vaccinations (MMR, Tetanus, Polio)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN';
+
+-- Health risks
+INSERT IGNORE INTO health_risks (advisory_id, risk)
+SELECT a.id, 'Malaria' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'RW'
+UNION ALL SELECT a.id, 'Cholera' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'RW'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'RW'
+UNION ALL SELECT a.id, 'Bilharzia (schistosomiasis) in Lake Kivu' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'RW';
+
+INSERT IGNORE INTO health_risks (advisory_id, risk)
+SELECT a.id, 'Malaria (coast and lake regions)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT a.id, 'Dengue Fever (coastal areas)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT a.id, 'Cholera (periodic outbreaks)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT a.id, 'Rift Valley Fever (rare)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE'
+UNION ALL SELECT a.id, 'Plague (rare, North Eastern Province)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE';
+
+INSERT IGNORE INTO health_risks (advisory_id, risk)
+SELECT a.id, 'Malaria (high risk year-round)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT a.id, 'Cholera (periodic outbreaks)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT a.id, 'Dengue Fever' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT a.id, 'Bilharzia (in lake and river areas)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ'
+UNION ALL SELECT a.id, 'Plague (rare, northern highlands)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ';
+
+INSERT IGNORE INTO health_risks (advisory_id, risk)
+SELECT a.id, 'Malaria (high risk year-round)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT a.id, 'Ebola (monitoring - DRC border proximity)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT a.id, 'Cholera' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT a.id, 'Plague (rare)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG'
+UNION ALL SELECT a.id, 'Marburg Virus (rare, historical outbreaks)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG';
+
+INSERT IGNORE INTO health_risks (advisory_id, risk)
+SELECT a.id, 'Malaria (high risk year-round nationwide)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT a.id, 'Lassa Fever (endemic)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT a.id, 'Cholera (periodic outbreaks)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT a.id, 'Monkeypox (endemic)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT a.id, 'Meningitis (northern belt, dry season)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG'
+UNION ALL SELECT a.id, 'Dengue Fever' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG';
+
+INSERT IGNORE INTO health_risks (advisory_id, risk)
+SELECT a.id, 'Malaria (high risk year-round)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT a.id, 'Cholera (periodic outbreaks)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH'
+UNION ALL SELECT a.id, 'Dengue Fever (emerging risk)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH';
+
+INSERT IGNORE INTO health_risks (advisory_id, risk)
+SELECT a.id, 'HIV/AIDS (very high prevalence)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT a.id, 'Malaria (risk in Limpopo, Mpumalanga, northern KwaZulu-Natal)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT a.id, 'Tuberculosis (high prevalence)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ZA'
+UNION ALL SELECT a.id, 'Bilharzia (freshwater lakes and rivers)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ZA';
+
+INSERT IGNORE INTO health_risks (advisory_id, risk)
+SELECT a.id, 'Typhoid (food and water-borne)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT a.id, 'Rabies (from stray dogs and cats)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT a.id, 'Leishmaniasis (sandfly-borne, rural areas)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'MA'
+UNION ALL SELECT a.id, 'Scorpion and snake bites (desert and rural areas)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'MA';
+
+INSERT IGNORE INTO health_risks (advisory_id, risk)
+SELECT a.id, 'Malaria (high risk in lowlands)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT a.id, 'Cholera (periodic outbreaks)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT a.id, 'Hepatitis A' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT a.id, 'Leishmaniasis (rural areas)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET'
+UNION ALL SELECT a.id, 'Rabies (from dogs)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET';
+
+INSERT IGNORE INTO health_risks (advisory_id, risk)
+SELECT a.id, 'Malaria (high risk year-round)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT a.id, 'Dengue Fever (increasing reports)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT a.id, 'Cholera (periodic outbreaks)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT a.id, 'Typhoid' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN'
+UNION ALL SELECT a.id, 'Bilharzia (freshwater exposure)' FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN';
+
+-- Active outbreaks / monitoring notes
+INSERT IGNORE INTO health_active_outbreaks (advisory_id, outbreak)
+SELECT a.id, 'Monitor CDC and WHO for Ebola updates - DRC border area'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'RW';
+
+INSERT IGNORE INTO health_active_outbreaks (advisory_id, outbreak)
+SELECT a.id, 'Monitor CDC for Dengue and Cholera seasonal notices'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'KE';
+
+INSERT IGNORE INTO health_active_outbreaks (advisory_id, outbreak)
+SELECT a.id, 'Monitor WHO/CDC for seasonal Cholera alerts during rainy seasons (Mar-May, Oct-Dec)'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'TZ';
+
+INSERT IGNORE INTO health_active_outbreaks (advisory_id, outbreak)
+SELECT a.id, 'Monitor WHO/CDC for Ebola alerts - DRC border area carries ongoing risk'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'UG';
+
+INSERT IGNORE INTO health_active_outbreaks (advisory_id, outbreak)
+SELECT a.id, 'Monitor CDC/WHO for Lassa Fever and Cholera outbreak alerts - seasonal peaks Feb-May'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'NG';
+
+INSERT IGNORE INTO health_active_outbreaks (advisory_id, outbreak)
+SELECT a.id, 'Monitor CDC/WHO for Meningitis belt alerts (dry season Nov-May) in northern regions'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'GH';
+
+INSERT IGNORE INTO health_active_outbreaks (advisory_id, outbreak)
+SELECT a.id, 'Malaria risk is seasonal - highest Oct-May in northern provinces'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ZA';
+
+INSERT IGNORE INTO health_active_outbreaks (advisory_id, outbreak)
+SELECT a.id, 'No major ongoing outbreaks - monitor CDC for seasonal notices'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'MA';
+
+INSERT IGNORE INTO health_active_outbreaks (advisory_id, outbreak)
+SELECT a.id, 'Monitor CDC/WHO for Cholera alerts; conflict regions have elevated disease risk'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'ET';
+
+INSERT IGNORE INTO health_active_outbreaks (advisory_id, outbreak)
+SELECT a.id, 'Monitor CDC/WHO for Dengue and Cholera alerts - peak risk Jul-Nov'
+FROM health_advisories a JOIN countries c ON a.country_id = c.id WHERE c.country_code = 'SN';
 
 -- -- NEWS ---------------------------------------------------
 INSERT IGNORE INTO news (title, content, country_code, category, published_at) VALUES

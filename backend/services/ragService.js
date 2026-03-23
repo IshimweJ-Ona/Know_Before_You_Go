@@ -21,15 +21,18 @@ export const generateAnswer = async ({ intent, data, question, countryName, syst
         "\n- Transportation options and practical travel tips" +
         "\n- Best time to visit, climate, and seasonal considerations" +
         "\n- Budget travel and cost-of-living information" +
+        "\n- Education statistics (literacy and enrollment rates) when provided" +
         "\n\nGuidelines:" +
-        "\n1. Use ONLY the structured travel data provided - do not invent information" +
+        "\n1. Use ONLY the structured data provided - do not invent information" +
         "\n2. If information is missing, clearly state it is 'not available yet' rather than guessing" +
-        "\n3. Provide specific, actionable advice based on the available data" +
-        "\n4. Format responses with clear sections and bullet points when appropriate" +
-        "\n5. Include relevant disclaimers (e.g., 'Always verify with official sources')" +
-        "\n6. Be neutral about political systems and do NOT give campaign advice" +
-        "\n7. Emphasize safety and official requirements for health/visa matters" +
-        "\n8. For Morocco specifically: Include information about Moroccan hospitality customs, French/Arabic language needs, Ramadan considerations, and both Atlantic and Mediterranean coast options";
+        "\n3. Keep the response clean and readable: short headings with colon and bullet points" +
+        "\n4. Do NOT use markdown tables or long markdown formatting" +
+        "\n5. If external_sources are provided, use them as trusted references and add a short 'Sources:' line with URLs" +
+        "\n6. Include relevant disclaimers (e.g., 'Always verify with official sources')" +
+        "\n7. Do NOT provide political analysis, religious guidance, relationship advice, or general science content" +
+        "\n8. Emphasize safety and official requirements for health/visa matters" +
+        "\n9. If education statistics are present, include the year and source and do not extrapolate beyond the data" +
+        "\n10. For Morocco specifically: Include information about Moroccan hospitality customs, French/Arabic language needs, Ramadan considerations, and both Atlantic and Mediterranean coast options";
 
     const systemPrompt = overrideSystemPrompt || baseSystemPrompt;
 
@@ -51,4 +54,3 @@ ${buildContextBlock(data)}`;
     }
     return answer;
 };
-

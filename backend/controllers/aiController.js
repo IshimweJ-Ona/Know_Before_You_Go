@@ -3,6 +3,9 @@ import { detectCountries } from "../services/countryDetector.js";
 import { fetchCountryProfileCached, fetchVisaInfoCached } from "../services/knowledgeEngine.js";
 import { formatGuide, formatVisa } from "../services/responseFormatter.js";
 import { generateAnswer } from "../services/ragService.js";
+import { evaluateQueryPolicy, buildPolicyRefusal } from "../services/aiPolicy.js";
+import { fetchEducationStatsCached } from "../services/educationStatsService.js";
+import { fetchExternalEnrichment } from "../services/externalSources.js";
 
 const hasMeaningfulData = (payload) => {
     if (!payload) return false;
@@ -21,6 +24,15 @@ export const handleQuery = async (req, res) => {
 
         if (!query || typeof query !== "string") {
             return res.status(400).json({ success: false, message: "Query is required." });
+        }
+
+        const policy = evaluateQueryPolicy(query);
+        if (!policy.allowed) {
+            return res.json({
+                success: true,
+                intent: "out_of_scope",
+                aiText: buildPolicyRefusal(policy.reason),
+            });
         }
 
         const intent = analyzeQuery(query);
@@ -42,9 +54,15 @@ export const handleQuery = async (req, res) => {
             let aiText = "";
             try {
                 if (hasMeaningfulData(visaData)) {
+                    const external = await fetchExternalEnrichment({
+                        intent,
+                        countryName: targetCountry,
+                        countryCode: visaData?.country?.country_code,
+                    });
+                    const aiData = external ? { ...visaData, external_sources: external } : visaData;
                     aiText = await generateAnswer({
                         intent,
-                        data: visaData,
+                        data: aiData,
                         question: query,
                         countryName: targetCountry,
                     });
@@ -89,9 +107,20 @@ export const handleQuery = async (req, res) => {
         let aiText = "";
         try {
             if (hasMeaningfulData(profile)) {
+                let educationStats = null;
+                if (policy.wantsEducationStats) {
+                    educationStats = await fetchEducationStatsCached({ countryName: targetCountry });
+                }
+                const external = await fetchExternalEnrichment({
+                    intent,
+                    countryName: targetCountry,
+                    countryCode: profile?.country?.country_code,
+                });
                 aiText = await generateAnswer({
                     intent,
-                    data: profile,
+                    data: educationStats
+                        ? { ...profile, education_stats: educationStats, external_sources: external }
+                        : { ...profile, external_sources: external },
                     question: query,
                     countryName: targetCountry,
                 });

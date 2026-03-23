@@ -23,10 +23,6 @@ if (missing.length) {
     }
 }
 
-if (process.env.NODE_ENV === "production" && !process.env.ADMIN_SETUP_TOKEN) {
-    console.warn("[KBYG] ADMIN_SETUP_TOKEN is not set. First admin creation will be blocked.");
-}
-
 export const env = {
     nodeEnv: process.env.NODE_ENV || "development",
 
@@ -39,8 +35,7 @@ export const env = {
     },
 
     jwtSecret: process.env.JWT_SECRET || "",
-    adminSetupToken: process.env.ADMIN_SETUP_TOKEN || "",
     groqApiKey: process.env.GROQ_API_KEY || "",
     aiCacheTtlSeconds: Number(process.env.AI_CACHE_TTL_SECONDS || 6 * 60 * 60),
+    externalSourcesTtlSeconds: Number(process.env.EXTERNAL_SOURCES_TTL_SECONDS || 6 * 60 * 60),
 };
-

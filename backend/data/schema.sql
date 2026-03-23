@@ -165,6 +165,7 @@ CREATE TABLE IF NOT EXISTS users (
     full_name VARCHAR(120),
     role ENUM('subscriber','admin') NOT NULL DEFAULT 'subscriber',
     password_hash VARCHAR(255),
+    session_token_hash VARCHAR(255),
     status VARCHAR(20) DEFAULT 'active',
     source VARCHAR(50) DEFAULT 'frontend',
     is_active TINYINT(1) DEFAULT 1,
@@ -173,6 +174,20 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_created_at ON users(created_at);
+CREATE INDEX idx_users_role_created ON users(role, created_at);
+
+-- Admin invite list (controls who can sign up as admin)
+CREATE TABLE IF NOT EXISTS admin_invites (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(191) NOT NULL UNIQUE,
+    is_active TINYINT(1) DEFAULT 1,
+    created_by VARCHAR(100),
+    used_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_admin_invites_active ON admin_invites(is_active, used_at);
 
 -- News table for travel updates
 CREATE TABLE IF NOT EXISTS news (
