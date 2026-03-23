@@ -81,6 +81,19 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function cleanAiText(text) {
+  const raw = String(text || '');
+  const noCode = raw.replace(/```[\s\S]*?```/g, (m) => m.replace(/```/g, ''));
+  const noBold = noCode.replace(/\*\*(.*?)\*\*/g, '$1');
+  const noHeadings = noBold.replace(/^\s*#{1,6}\s*/gm, '');
+  const lines = noHeadings.split('\n').filter((line) => {
+    const pipeCount = (line.match(/\|/g) || []).length;
+    if (pipeCount >= 2) return false;
+    if (/^\s*\|[-\s:]+\|\s*$/.test(line)) return false;
+    return true;
+  });
+  return lines.join('\n').trim();
+}
 // Basic URL sanitizer for images/links so assets stay path-safe
 function safeUrl(value) {
   const url = String(value || '').trim();
@@ -621,7 +634,7 @@ async function requestMoreInfo(){
     setEl('d-ai', 'Loading more info...');
     const res = await api(EP.AI_QUERY, {
       method: 'POST',
-      body: JSON.stringify({ query: `More advanced travel guidance for ${name}: deeper detail on political stability (neutral and factual only), emergency services, and local laws travellers commonly misunderstand.` }),
+      body: JSON.stringify({ query: `More advanced travel guidance for ${name}: deeper detail on emergency services, local laws travelers commonly misunderstand, transport safety tips, and education statistics (literacy or enrollment where available).` }),
     });
     const textOut = res.aiText || '';
     renderAiSummary(textOut, c);
@@ -743,8 +756,12 @@ async function submitSignup() {
 }
 
 function openChat() {
-  document.getElementById('chat-overlay').classList.add('open');
-  document.getElementById('chat-messages').innerHTML = '';
+  const overlay = document.getElementById('chat-overlay');
+  if (overlay) overlay.classList.add('open');
+  const messagesDiv = document.getElementById('chat-modal-messages');
+  if (messagesDiv) messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  const input = document.getElementById('chat-modal-input');
+  if (input) input.focus();
 }
 
 function closeChatBtn() {
@@ -845,7 +862,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 function updateLoginUI() {
-  const loginBtn = document.getElementById('login-btn');
+  const loginBtn = document.getElementById('login-nav-btn');
   const chatFloatBtn = document.getElementById('chat-float-btn');
   const newsSection = document.getElementById('news-section');
   const userProfile = document.getElementById('user-profile');
@@ -929,7 +946,7 @@ function logoutUser() {
 
 async function sendChat() {
   if (!USER_TOKEN) {
-    const messagesDiv = document.getElementById('chat-messages');
+    const messagesDiv = document.getElementById('chat-modal-messages');
     messagesDiv.innerHTML += `<div class="chat-message ai-message">
       <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
       <div class="chat-bubble">Please log in to use the AI chat feature.</div>
@@ -937,12 +954,12 @@ async function sendChat() {
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
     return;
   }
-  const input = document.getElementById('chat-input');
+  const input = document.getElementById('chat-modal-input');
   const message = input.value.trim();
   if (!message) return;
   input.value = '';
 
-  const messagesDiv = document.getElementById('chat-messages');
+  const messagesDiv = document.getElementById('chat-modal-messages');
 
   // Add user message
   messagesDiv.innerHTML += `<div class="chat-message user-message">
@@ -968,9 +985,10 @@ async function sendChat() {
     chatHistory.push({ role: 'assistant', content: res.response });
 
     // Add AI response
+    const clean = cleanAiText(res.response);
     messagesDiv.innerHTML += `<div class="chat-message ai-message">
       <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
-      <div class="chat-bubble">${escapeHtml(res.response).replace(/\n/g, '<br>')}</div>
+      <div class="chat-bubble">${escapeHtml(clean).replace(/\n/g, '<br>')}</div>
     </div>`;
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   } catch (err) {
@@ -989,21 +1007,22 @@ function startNewChat() {
   // Clear chat history
   chatHistory = [];
   // Clear messages display
-  const messagesDiv = document.getElementById('chat-messages');
+  const messagesDiv = document.getElementById('chat-modal-messages');
   messagesDiv.innerHTML = `<div class="chat-message ai-message">
     <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
     <div class="chat-bubble">
-      Hello! I'm your travel assistant. Ask me about visas, health requirements, cultural tips, emergency contacts, or anything else about African destinations. What would you like to know?
+      Hello! I'm your travel assistant. I can help with visas, health requirements, cultural tips, emergency contacts, transport, and education statistics for African destinations. I can't help with politics, religion, relationships, or general science topics. What would you like to know?
     </div>
   </div>`;
   // Clear input
-  document.getElementById('chat-input').value = '';
+  const input = document.getElementById('chat-modal-input');
+  if (input) input.value = '';
   // Scroll to bottom
   messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
 function toggleChatHistory() {
-  const messagesDiv = document.getElementById('chat-messages');
+  const messagesDiv = document.getElementById('chat-modal-messages');
   messagesDiv.innerHTML += `<div class="chat-message ai-message">
     <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
     <div class="chat-bubble">
@@ -1020,20 +1039,6 @@ function toggleChatSidebar() {
   }
 }
 
-function openChat() {
-  document.getElementById('chat-overlay').classList.add('open');
-}
-
-function closeChatBtn() {
-  document.getElementById('chat-overlay').classList.remove('open');
-}
-
-function closeChat(e) {
-  if (e.target === document.getElementById('chat-overlay')) {
-    closeChatBtn();
-  }
-}
-
 function updateChatHeader(c) {
   const name = c.country_name || c.name || 'this country';
   setTxt('chat-title', `AI Travel Assistant for ${name}`);
@@ -1042,11 +1047,11 @@ function updateChatHeader(c) {
 }
 
 async function sendCountryChat() {
-  const input = document.getElementById('chat-input');
+  const input = document.getElementById('country-chat-input');
   const message = input.value.trim();
   if (!message) return;
   input.value = '';
-  const messagesDiv = document.getElementById('chat-messages');
+  const messagesDiv = document.getElementById('country-chat-messages');
   messagesDiv.innerHTML += `<div class="chat-message user">
     <div class="chat-avatar"><i class="fa-solid fa-user"></i></div>
     <div class="chat-bubble">${escapeHtml(message)}</div>
@@ -1058,10 +1063,10 @@ async function sendCountryChat() {
       method: 'POST',
       body: JSON.stringify({ query }),
     });
-    const answer = res.answer || res.response || 'No response';
+    const answer = cleanAiText(res.answer || res.response || 'No response');
     messagesDiv.innerHTML += `<div class="chat-message ai">
       <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
-      <div class="chat-bubble">${answer.replace(/\n/g, '<br>')}</div>
+      <div class="chat-bubble">${escapeHtml(answer).replace(/\n/g, '<br>')}</div>
     </div>`;
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   } catch (err) {

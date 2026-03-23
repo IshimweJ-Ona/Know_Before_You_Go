@@ -1051,6 +1051,7 @@ footer {
   grid-template-columns: 260px 1fr;
   animation: chatSlideIn 0.3s ease-out;
   position: relative;
+  min-height: 0;
 }
 
 @media (min-width: 901px) {
@@ -1235,6 +1236,7 @@ footer {
   grid-template-rows: 70px 1fr 80px;
   background: #f9f9fc;
   height: 100%;
+  min-height: 0;
 }
 
 .chat-header {
@@ -1273,6 +1275,9 @@ footer {
   gap: 16px;
   flex: 1;
   background: linear-gradient(to bottom, #ffffff 0%, #f5f5fb 30%, #f2f2f8 100%);
+  min-height: 0;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .chat-messages::-webkit-scrollbar {

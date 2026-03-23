@@ -71,7 +71,7 @@
           <label class="f-label" for="login-password">Password</label>
           <input type="password" class="f-input" id="login-password" placeholder="Password" autocomplete="current-password">
         </div>
-        <button class="btn-primary" id="login-btn" onclick="submitLogin()">Login</button>
+        <button class="btn-primary" id="login-submit-btn" onclick="submitLogin()">Login</button>
         <p class="nl-disclaimer">Don't have an account? <a href="#" onclick="switchToSignup()">Sign up</a></p>
       </div>
       <div id="signup-form" style="display:none;">
@@ -144,11 +144,11 @@
         </header>
 
         <!-- Messages Area -->
-        <section class="chat-messages" id="chat-messages">
+        <section class="chat-messages" id="chat-modal-messages">
           <div class="chat-message ai-message">
             <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
             <div class="chat-bubble">
-              Hello! I'm your travel assistant. Ask me about visas, health requirements, cultural tips, emergency contacts, or anything else about African destinations. What would you like to know?
+              Hello! I'm your travel assistant. I can help with visas, health requirements, cultural tips, emergency contacts, transport, and education statistics for African destinations. I can't help with politics, religion, relationships, or general science topics. What would you like to know?
             </div>
           </div>
         </section>
@@ -156,7 +156,7 @@
         <!-- Input Area -->
         <footer class="chat-input-footer">
           <div class="chat-input-wrapper">
-            <input type="text" class="chat-input" id="chat-input" placeholder="Ask about visas, health, emergencies, culture..." onkeypress="handleChatKey(event)" autocomplete="off">
+            <input type="text" class="chat-input" id="chat-modal-input" placeholder="Ask about visas, health, emergencies, culture, transport, or education stats..." onkeypress="handleChatKey(event)" autocomplete="off">
             <button class="chat-send-btn" onclick="sendChat()" aria-label="Send message">
               <i class="fa-solid fa-paper-plane"></i>
             </button>
@@ -179,7 +179,7 @@
       </button>
 
       <div class="nav-right desktop-only">
-        <button class="nav-btn" id="login-btn" onclick="openLogin()">Login</button>
+        <button class="nav-btn" id="login-nav-btn" onclick="openLogin()">Login</button>
         <button class="nav-nl-btn" onclick="openNL()">Subscribe to News</button>
         <div id="user-profile" style="display:none;" class="user-profile">
           <div class="user-avatar" onclick="toggleUserMenu()">
@@ -394,7 +394,7 @@
                 <header class="chat-header">
                   <h3>AI Travel Assistant</h3>
                 </header>
-                <section class="chat-messages" id="chat-messages">
+                <section class="chat-messages" id="country-chat-messages">
                   <div class="chat-message ai">
                     <div class="chat-avatar">🤖</div>
                     <div class="chat-bubble" id="chat-welcome">
@@ -405,12 +405,12 @@
                 <footer class="chat-input">
                   <input
                     type="text"
-                    id="chat-input"
+                    id="country-chat-input"
                     placeholder="Ask about visas, health, emergency numbers, culture, or places to visit..."
                     autocomplete="off"
                     onkeypress="handleCountryChatKey(event)"
                   >
-                  <button id="chat-send" onclick="sendCountryChat()">Send</button>
+                  <button id="country-chat-send" onclick="sendCountryChat()">Send</button>
                 </footer>
               </div>
             </div>
