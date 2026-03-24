@@ -1,10 +1,5 @@
-CREATE DATABASE IF NOT EXISTS ai_db;
-USE ai_db;
-
--- Create user and grant privileges
-CREATE USER IF NOT EXISTS 'kbyg_user'@'%' IDENTIFIED BY 'kbyg_password';
-GRANT ALL PRIVILEGES ON ai_db.* TO 'kbyg_user'@'%';
-FLUSH PRIVILEGES;
+-- NOTE: Database and users are managed externally (e.g., Aiven).
+-- Run this schema after selecting your target database.
 
 -- Core countries table
 CREATE TABLE IF NOT EXISTS countries (

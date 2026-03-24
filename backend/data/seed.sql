@@ -1,4 +1,4 @@
-USE ai_db;
+-- NOTE: Run this seed after selecting your target database.
 
 -- -- COUNTRIES 
 INSERT IGNORE INTO countries
